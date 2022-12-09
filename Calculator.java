@@ -1,21 +1,30 @@
-public class Calculator {
+import java.util.Arrays;
 
-    public static void main(String[] args) {
-        int[][] board =           { {0, 0, 6, 1, 0, 0, 0, 0, 8},
-                {0, 8, 0, 0, 9, 0, 0, 3, 0},
-                {2, 0, 0, 0, 0, 5, 4, 0, 0},
-                {4, 0, 0, 0, 0, 1, 8, 0, 0},
-                {0, 3, 0, 0, 7, 0, 0, 4, 0},
-                {0, 0, 7, 9, 0, 0, 0, 0, 3},
-                {0, 0, 8, 4, 0, 0, 0, 0, 6},
-                {0, 2, 0, 0, 5, 0, 0, 8, 0},
-                {1, 0, 0, 0, 0, 2, 5, 0, 0} };
-        if ( solver(0,0, board) ) System.out.println("Yayy");
-        else System.out.println("nooo");
-    }
+public class Calculator {
+    static int[][] example_board1 =           {
+            {0, 0, 6, 1, 0, 0, 0, 0, 8},
+            {0, 8, 0, 0, 9, 0, 0, 3, 0},
+            {2, 0, 0, 0, 0, 5, 4, 0, 0},
+            {4, 0, 0, 0, 0, 1, 8, 0, 0},
+            {0, 3, 0, 0, 7, 0, 0, 4, 0},
+            {0, 0, 7, 9, 0, 0, 0, 0, 3},
+            {0, 0, 8, 4, 0, 0, 0, 0, 6},
+            {0, 2, 0, 0, 5, 0, 0, 8, 0},
+            {1, 0, 0, 0, 0, 2, 5, 0, 0} };
+    static int[][] example_board2 = {
+            {0, 0, 0, 0, 6, 0, 0, 2, 7},
+            {0, 0, 0, 0, 0, 0, 0, 0, 5},
+            {0, 0, 4, 0, 9, 1, 0, 8, 0},
+            {0, 0, 8, 0, 0, 0, 0, 0, 4},
+            {0, 0, 0, 4, 3, 0, 0, 0, 0},
+            {0, 7, 0, 0, 8, 0, 0, 3, 0},
+            {3, 0, 0, 0, 0, 9, 0, 0, 1},
+            {7, 2, 0, 1, 0, 0, 0, 0, 0},
+            {0, 9, 0, 0, 0, 0, 2, 0, 0} };
+
 
     /**
-     * method where you can pass in a uncompleted board and it returns completed board
+     * method where you can pass in an uncompleted board, and it returns completed board
      * @params:
      * board: uncompleted sudoku board (int[9][9])
      */
@@ -57,19 +66,32 @@ public class Calculator {
      * num: value we are checking
      */
     private static boolean assumption(int[][] board, int x, int y, int num) {
-        return checkRows(board, y, num) && checkColumns(board, x, num) && checkSquares(board, x, y, num);
+        int tmp = board[x][y];
+        board[x][y] = num;
+        boolean result = checkRows(board) && checkColumns(board) && checkSquares(board);
+        board[x][y] = tmp;
+        return result;
     }
 
     /**
-     * checks if a certain number occurs in a certain column
+     * checks if a certain number occurs in a certain row
      * @params:
      * board: the sudoku board
-     * x: index of column we are checking
+     * x: index of row we are checking
      * num: number we are checking
      */
-    private static boolean checkRows(int[][] board, int y, int num) {
-        for ( int otherNums : board[y] ) {
-            if ( otherNums == num ) return false;
+    private static boolean checkRows(int[][] board) {
+        int[] nums = new int[9];
+        for ( int row = 0; row < 9; row++ ) {
+            for ( int i = 0; i < 9; i++ ) {
+                nums[i] = board[row][i];
+            }
+            Arrays.sort(nums);
+            for ( int i = 0; i < 8; i++ ) {
+                if ( nums[i] != 0 && nums[i] == nums[i+1] ) {
+                    return false;
+                }
+            }
         }
         return true;
     }
@@ -81,9 +103,18 @@ public class Calculator {
      * x: index of column we are checking
      * num: number we are checking
      */
-    private static boolean checkColumns(int[][] board, int x, int num) {
-        for ( int row = 0; row < 9; row ++ ) {
-            if ( board[row][x] == num ) return false;
+    private static boolean checkColumns(int[][] board) {
+        int[] nums = new int[9];
+        for ( int column = 0; column < 9; column++ ) {
+            for ( int i = 0; i < 9; i++ ) {
+                nums[i] = board[i][column];
+            }
+            Arrays.sort(nums);
+            for ( int i = 0; i < 8; i++ ) {
+                if ( nums[i] != 0 && nums[i] == nums[i+1] ) {
+                    return false;
+                }
+            }
         }
         return true;
     }
@@ -95,12 +126,21 @@ public class Calculator {
      * x, y: coordinates of the position
      * num: value we are checking
      */
-    private static boolean checkSquares(int[][] board, int x, int y, int num) {
-        int startingX = ((int)(x/3))*3;
-        int startingY = ((int)(y/3))*3;
-        for ( int a = 0; a < 3; a++ ) {
-            for ( int b = 0; b < 3; b++ ) {
-                if ( board[startingY+a][startingX+b] == num ) return false;
+    private static boolean checkSquares(int[][] board) {
+        int[] nums = new int[9];
+        int h = 0;
+        for ( int i = 0; i < 9; i+=3 ) {
+            for ( int j = 0; j < 9; j+=3 ) {
+                for ( int k = i; k < i+3; k++ ) {
+                    for ( int l = j; l < j+3; l++ ) {
+                        nums[h++] = board[k][l];
+                    }
+                }
+                h = 0;
+                Arrays.sort(nums);
+                for ( int m = 0; m < 8; m++ ) {
+                    if ( nums[m] != 0 && nums[m] == nums[m+1] ) return false;
+                }
             }
         }
         return true;
