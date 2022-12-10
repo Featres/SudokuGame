@@ -27,7 +27,8 @@ public class Play {
         screenWidth = (int)size.getWidth();
         screenHeight = (int)size.getHeight();
 
-        new Menu();
+        Menu currMenu = new Menu();
+
     }
 }
 
@@ -53,6 +54,14 @@ class Menu extends JFrame {
         this.add(new MenuLabel(this));
 
         this.setVisible(true);
+    }
+
+    /**
+     * a method that can access Menus visibility
+     * @param newVisible - boolean that menus visibility is set to
+     */
+    public void setVisiblility(boolean newVisible) {
+        this.setVisible(newVisible);
     }
 }
 
@@ -136,10 +145,10 @@ class ClickListener implements MouseListener {
     }
     @Override
     public void mouseClicked(MouseEvent e) {
-        System.out.println("WoW");
+//        System.out.println("WoW"); for the testing
         this.label.setVisible(false);
-        this.frame.add(new Game());
-
+        Game newGame = new Game();
+        this.frame.add(newGame);
     }
     @Override
     public void mousePressed(MouseEvent e) {}
