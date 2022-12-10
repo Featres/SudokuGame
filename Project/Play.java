@@ -50,10 +50,23 @@ class Menu extends JFrame {
             e.printStackTrace();
         }
 
-        this.add(new TitleLabel());
-        this.add(new PlayLabel());
+        this.add(new MenuLabel(this));
 
         this.setVisible(true);
+    }
+}
+
+/**
+ * label used to control all the labels on menu panel
+ */
+class MenuLabel extends JLabel {
+    private final JFrame frame;
+    MenuLabel(JFrame frame) {
+        this.frame = frame;
+        this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
+        this.add(new TitleLabel());
+        this.add(new PlayLabel(this, this.frame));
+        this.add(new InstructionLabel());
     }
 }
 
@@ -78,7 +91,11 @@ class TitleLabel extends JLabel {
  * play button for the game added to the menu - starts the game
  */
 class PlayLabel extends JLabel {
-    PlayLabel() {
+    private final JLabel label;
+    private final JFrame frame;
+    PlayLabel(JLabel label, JFrame frame) {
+        this.frame = frame;
+        this.label = label;
         this.setBounds((int)(Play.screenWidth/10), (int)(Play.screenHeight/3), (int)(Play.screenWidth/10), (int)(Play.screenHeight/18));
         this.setText("Play");
         this.setFont(new Font("SansSerif", Font.BOLD, 45));
@@ -86,9 +103,24 @@ class PlayLabel extends JLabel {
         this.setVerticalAlignment(SwingConstants.CENTER);
         this.setBackground(Color.WHITE);
         this.setOpaque(true);
-        this.addMouseListener(new ClickListener());
+        this.addMouseListener(new ClickListener(this.frame, this.label));
         LineBorder line = new LineBorder(Color.GRAY, 1, true);
         this.setBorder(line);
+    }
+}
+
+/**
+ * in menu there will be instructions for the game displayed. to be implemented
+ */
+class InstructionLabel extends JLabel {
+    InstructionLabel() {
+        this.setBounds((int)(Play.screenWidth*5/8), (int)(Play.screenHeight/8), (int)(Play.screenWidth*5/16), (int)(Play.screenHeight/4));
+        this.setText("Instructions");
+        this.setFont(new Font("SansSerif", Font.BOLD, 35));
+        this.setHorizontalAlignment(SwingConstants.CENTER);
+        this.setVerticalAlignment(SwingConstants.TOP);
+        this.setBackground(Color.WHITE);
+        this.setOpaque(true);
     }
 }
 
@@ -96,10 +128,18 @@ class PlayLabel extends JLabel {
  * click listener for play label to trigger the start of the game
  */
 class ClickListener implements MouseListener {
+    private final JLabel label;
+    private final JFrame frame;
+    ClickListener(JFrame frame, JLabel label) {
+        this.label = label;
+        this.frame = frame;
+    }
     @Override
     public void mouseClicked(MouseEvent e) {
         System.out.println("WoW");
-        // magic happens
+        this.label.setVisible(false);
+        this.frame.add(new Game());
+
     }
     @Override
     public void mousePressed(MouseEvent e) {}
