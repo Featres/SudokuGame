@@ -147,7 +147,7 @@ class ClickListener implements MouseListener {
     public void mouseClicked(MouseEvent e) {
 //        System.out.println("WoW"); for the testing
         this.label.setVisible(false);
-        Game newGame = new Game();
+        Game newGame = new Game(this.frame);
         this.frame.add(newGame);
     }
     @Override

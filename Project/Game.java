@@ -13,9 +13,30 @@ import java.awt.geom.Point2D;
  *
  */
 public class Game extends JLabel {
-    Game() {
+    static int boardX;
+    static int boardY;
+    static int boardSize;
+    JFrame frame;
+    Game(JFrame frame) {
+        boardSize = (int)(Play.screenWidth/3);
+        boardX = (int)(Play.screenWidth/3);
+        boardY = (int)(Play.screenHeight/6);
+
+        this.frame = frame;
+
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
         this.add(new SudokuBoard());
+
+        BoardComponent boardLines = new BoardComponent();
+        this.frame.add(boardLines);
+
+        JFrame jFrame = new JFrame();
+        jFrame.setSize(750,750);
+        jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        jFrame.add(boardLines);
+        jFrame.setVisible(true);
+
+        System.out.println("a");
     }
 
     /**
@@ -32,12 +53,9 @@ public class Game extends JLabel {
  */
 class SudokuBoard extends JLabel {
     SudokuBoard() {
-        this.setBounds((int)(Play.screenWidth/3), (int)(Play.screenHeight/6), (int)(Play.screenWidth/3), (int)(Play.screenWidth/3));
+        this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setBackground(Color.WHITE);
         this.setOpaque(true); // for the testing
-
-        BoardLines boardLines = new BoardLines((int)(Play.screenWidth/3), (int)(Play.screenHeight/6), (int)(Play.screenWidth/3));
-        this.add(boardLines);
     }
 }
 
@@ -47,28 +65,28 @@ class SudokuBoard extends JLabel {
  * startX, startY - coordinates where the sudoku board starts
  * bound - length of a side of the board
  */
-class BoardLines extends JComponent {
-    private final int startX;
-    private final int startY;
-    private final int size;
-    BoardLines(int startX, int startY, int bound) {
-        this.startX = startX;
-        this.startY = startY;
-        this.size = bound/9;
-        this.setBounds(this.startX, this.startY, bound, bound);
-        System.out.println("Im here A");
-    }
-
+class BoardComponent extends JComponent {
     @Override
     public void paintComponent(Graphics g) {
         System.out.println("Im here");
 
         Graphics2D g2 = (Graphics2D) g;
 
-        this.drawMyself(g2);
+        Lines my_lines = new Lines();
+        my_lines.draw(g2);
     }
+}
 
-    private void drawMyself(Graphics2D g2) {
+class Lines {
+    private final int startX;
+    private final int startY;
+    private final int size;
+    Lines() {
+        this.startX = Game.boardX;
+        this.startY = Game.boardY;
+        this.size = Game.boardSize/9;
+    }
+    void draw(Graphics2D g2) {
         for ( int row = 0; row < 9; row++ ) {
             for ( int column = 0; column < 9; column++ ) {
                 int currX = row*this.size;
