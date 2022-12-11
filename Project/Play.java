@@ -27,7 +27,7 @@ public class Play {
         screenWidth = (int)size.getWidth();
         screenHeight = (int)size.getHeight();
 
-        Menu currMenu = new Menu();
+        new Menu();
 
     }
 }

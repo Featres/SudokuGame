@@ -10,12 +10,12 @@ import java.awt.geom.Point2D;
  * implementation:
  * - game board -
  * - on left side numbers from 1 - 9/button clear/...
- *
  */
 public class Game extends JLabel {
     static int boardX;
     static int boardY;
     static int boardSize;
+    int[][] currBoard;
     JFrame frame;
     Game(JFrame frame) {
         boardSize = (int)(Play.screenWidth/3);
@@ -24,19 +24,13 @@ public class Game extends JLabel {
 
         this.frame = frame;
 
+        this.currBoard = Random.randomSudoku();
+
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
+        this.setVisible(true);
         this.add(new SudokuBoard());
 
-        BoardComponent boardLines = new BoardComponent();
-        this.frame.add(boardLines);
-
-        JFrame jFrame = new JFrame();
-        jFrame.setSize(750,750);
-        jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        jFrame.add(boardLines);
-        jFrame.setVisible(true);
-
-        System.out.println("a");
+        this.frame.add(this);
     }
 
     /**
@@ -51,51 +45,36 @@ public class Game extends JLabel {
 /**
  * label that will be added to the game, where the sudoku board will be displayed
  */
-class SudokuBoard extends JLabel {
+class SudokuBoard extends JPanel {
     SudokuBoard() {
         this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setBackground(Color.WHITE);
         this.setOpaque(true); // for the testing
     }
-}
 
-/**
- * lines that will be used on sudoku board
- * @Params:
- * startX, startY - coordinates where the sudoku board starts
- * bound - length of a side of the board
- */
-class BoardComponent extends JComponent {
     @Override
-    public void paintComponent(Graphics g) {
-        System.out.println("Im here");
+    public void paint(Graphics g) {
 
         Graphics2D g2 = (Graphics2D) g;
 
-        Lines my_lines = new Lines();
-        my_lines.draw(g2);
-    }
-}
+        int size = Game.boardSize/9;
+        //int startX = Game.boardX;
+        //int startY = Game.boardY;
+        int startX = 0;
+        int startY = 0;
 
-class Lines {
-    private final int startX;
-    private final int startY;
-    private final int size;
-    Lines() {
-        this.startX = Game.boardX;
-        this.startY = Game.boardY;
-        this.size = Game.boardSize/9;
-    }
-    void draw(Graphics2D g2) {
+        g2.setStroke(new BasicStroke(6));
+        g2.setColor(Color.BLACK);
+
         for ( int row = 0; row < 9; row++ ) {
             for ( int column = 0; column < 9; column++ ) {
-                int currX = row*this.size;
-                int currY = column*this.size;
+                int currX = row*size;
+                int currY = column*size;
 
-                Point2D startPoint = new Point2D.Double(this.startX + currX, this.startY + currY);
-                Point2D topRightPoint = new Point2D.Double(this.startX + currX + this.size, this.startY + currY);
-                Point2D bottomLeftPoint = new Point2D.Double(this.startX + currX, this.startY + currY + this.size);
-                Point2D bottomRightPoint = new Point2D.Double(this.startX + currX + this.size, this.startY + currY + this.size);
+                Point2D startPoint = new Point2D.Double(startX + currX, startY + currY);
+                Point2D topRightPoint = new Point2D.Double(startX + currX + size, startY + currY);
+                Point2D bottomLeftPoint = new Point2D.Double(startX + currX, startY + currY + size);
+                Point2D bottomRightPoint = new Point2D.Double(startX + currX + size, startY + currY + size);
 
                 Line2D topLine = new Line2D.Double(startPoint, topRightPoint);
                 Line2D rightLine = new Line2D.Double(topRightPoint, bottomRightPoint);
@@ -111,10 +90,11 @@ class Lines {
     }
 }
 
+
 /**
  * label that will be added to the game, where the numbers will be displayed to be chosen
  */
-class Numbers extends JLabel {
+class Numbers extends JPanel {
     Numbers() {
 
     }
