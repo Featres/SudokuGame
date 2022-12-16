@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.util.Arrays;
 
 /**
  * class where user plays the game
@@ -16,6 +17,8 @@ public class Game extends JLabel {
     static int boardY;
     static int boardSize;
     int[][] currBoard;
+    int[][] startingBoard;
+    int[][] usersBoard;
     JFrame frame;
     Game(JFrame frame) {
         boardSize = (int)(Play.screenWidth/3);
@@ -25,12 +28,45 @@ public class Game extends JLabel {
         this.frame = frame;
 
         this.currBoard = Random.randomSudoku();
+        //TODO JOptionPane to ask for difficulty
+        double difficulty = 0.5d;
+        this.startingBoard = setUpStartingBoard(difficulty, this.currBoard);
+
+        //TODO some kind of checker stuff (is fully done?, correctly?)
+        this.usersBoard = this.startingBoard.clone();
+
+        //TODO learn how to access position/placements of a certain grid cell
 
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
         this.setVisible(true);
-        this.add(new SudokuBoard());
+        this.add(new SudokuBoard(this.startingBoard));
 
         this.frame.add(this);
+    }
+
+    /**
+     * method to decide which numbers and how many will be shown on starting grid
+     * @param difficulty - probability/amount of number shown in range (0,1)
+     *                   for example = 0.5 means that ~ 40 nums will be shown
+     * @param board - whole, completed board
+     * @return - board to be displayed, zeros on positions not to be displayed, actual numbers on other
+     */
+    private int[][] setUpStartingBoard(double difficulty, int[][] board) {
+        int[][] startingBoard = new int[9][9];
+
+        for ( int row = 0; row < 9; row++ ) {
+            for ( int column = 0; column < 9; column++ ) {
+                double currentProbability = Math.random();
+                if ( difficulty > currentProbability ) {
+                    startingBoard[row][column] = board[row][column];
+                }
+            }
+        }
+
+        System.out.println(Arrays.deepToString(board));
+        System.out.println(Arrays.deepToString(startingBoard));
+
+        return startingBoard;
     }
 
     /**
@@ -46,10 +82,13 @@ public class Game extends JLabel {
  * label that will be added to the game, where the sudoku board will be displayed
  */
 class SudokuBoard extends JPanel {
-    SudokuBoard() {
+    private int[][] startingBoard;
+    SudokuBoard(int[][] nStartingBoard) {
         this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setBackground(Color.WHITE);
         this.setOpaque(true); // for the testing
+
+        this.startingBoard = nStartingBoard;
     }
 
     @Override
@@ -58,13 +97,15 @@ class SudokuBoard extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
 
         int size = Game.boardSize/9;
-        //int startX = Game.boardX;
-        //int startY = Game.boardY;
         int startX = 0;
         int startY = 0;
 
         g2.setStroke(new BasicStroke(6));
         g2.setColor(Color.BLACK);
+
+        int fontSize = 80;
+        Font f = new Font("Comic Sans MS", Font.PLAIN, fontSize);
+        g2.setFont(f);
 
         for ( int row = 0; row < 9; row++ ) {
             for ( int column = 0; column < 9; column++ ) {
@@ -85,17 +126,12 @@ class SudokuBoard extends JPanel {
                 g2.draw(rightLine);
                 g2.draw(bottomLine);
                 g2.draw(leftLine);
+
+                if ( this.startingBoard[column][row] != 0 ) {
+                    g2.drawString(String.valueOf(this.startingBoard[column][row]), startX + currX + size + 10, startY + currY + size - 5);
+                }
             }
         }
     }
 }
 
-
-/**
- * label that will be added to the game, where the numbers will be displayed to be chosen
- */
-class Numbers extends JPanel {
-    Numbers() {
-
-    }
-}
