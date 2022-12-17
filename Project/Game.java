@@ -19,8 +19,12 @@ public class Game extends JLabel {
     int[][] currBoard;
     int[][] startingBoard;
     int[][] usersBoard;
+    double difficulty;
+    int userChoice;
     JFrame frame;
-    Game(JFrame frame) {
+    Game(JFrame frame, int userChoice) {
+
+
         boardSize = (int)(Play.screenWidth/3);
         boardX = (int)(Play.screenWidth/3);
         boardY = (int)(Play.screenHeight/6);
@@ -28,12 +32,15 @@ public class Game extends JLabel {
         this.frame = frame;
 
         this.currBoard = Random.randomSudoku();
-        //TODO JOptionPane to ask for difficulty
-        double difficulty = 0.5d;
+        System.out.println(Arrays.deepToString(this.currBoard));
+
+        this.userChoice = userChoice;
+        this.difficulty = customDifficulty(this.userChoice);
+        System.out.println("Difficulty: "+difficulty);
         this.startingBoard = setUpStartingBoard(difficulty, this.currBoard);
 
         //TODO some kind of checker stuff (is fully done?, correctly?)
-        this.usersBoard = this.startingBoard.clone();
+//        this.usersBoard = this.startingBoard.clone();
 
         //TODO learn how to access position/placements of a certain grid cell
 
@@ -63,10 +70,28 @@ public class Game extends JLabel {
             }
         }
 
-        System.out.println(Arrays.deepToString(board));
-        System.out.println(Arrays.deepToString(startingBoard));
+//        System.out.println(Arrays.deepToString(board));
+        System.out.println("Starting board: "+Arrays.deepToString(startingBoard));
 
         return startingBoard;
+    }
+
+    /**
+     * method to change users choice in Joptionpane to a actual difficulty
+     * @param userChoice - users choice in JOptionPane difficulty window
+     * @return - double of percentage of shown digits
+     */
+    private double customDifficulty(int userChoice) {
+        switch(userChoice) {
+            case 0:
+                return Math.random()/5 + 0.4;
+            case 1:
+                return Math.random()/5 + 0.25;
+            case 2:
+                return Math.random()/5 + 0.15;
+            default:
+                return 0.3d;
+        }
     }
 
     /**
@@ -128,7 +153,7 @@ class SudokuBoard extends JPanel {
                 g2.draw(leftLine);
 
                 if ( this.startingBoard[column][row] != 0 ) {
-                    g2.drawString(String.valueOf(this.startingBoard[column][row]), startX + currX + size + 10, startY + currY + size - 5);
+                    g2.drawString(String.valueOf(this.startingBoard[column][row]), startX + currX + 10, startY + currY + size - 5);
                 }
             }
         }

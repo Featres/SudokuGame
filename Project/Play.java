@@ -28,7 +28,14 @@ public class Play {
         screenHeight = (int)size.getHeight();
 
         new Menu();
+    }
 
+    public static void message(String message) {
+        JOptionPane.showMessageDialog(new JFrame(), message);
+    }
+
+    public static int difficultyAsker() {
+        return JOptionPane.showOptionDialog(new JFrame(), "Choose difficulty:", "Set up Your Sudoku", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[] {"Easy (~45 cells)", "Medium (~35 cells)", "Hard (~25 cells)"}, 1);
     }
 }
 
@@ -46,7 +53,8 @@ class Menu extends JFrame {
         this.setLayout(null);
 
         try {
-            this.setContentPane(new JLabel(new ImageIcon(ImageIO.read(new File("Project/Images/MenuBackground.png")))));
+            // C:\Users\piort\OneDrive\Documents\GitHub\SudokuGame\Project\Images\MenuBackground.png
+            this.setContentPane(new JLabel(new ImageIcon(ImageIO.read(new File("Images/MenuBackground.png")))));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -146,9 +154,10 @@ class ClickListener implements MouseListener {
     }
     @Override
     public void mouseClicked(MouseEvent e) {
+        int userChoice = Play.difficultyAsker();
 //        System.out.println("WoW"); for the testing
         this.label.setVisible(false);
-        Game newGame = new Game(this.frame);
+        Game newGame = new Game(this.frame, userChoice);
         this.frame.add(newGame);
     }
     @Override
