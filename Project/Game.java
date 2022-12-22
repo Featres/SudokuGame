@@ -2,6 +2,10 @@ package Project;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
@@ -13,19 +17,29 @@ import java.util.Arrays;
  * - on left side numbers from 1 - 9/button clear/...
  */
 public class Game extends JLabel {
+    //starting point of the board label
     static int boardX;
+    // starting point of the board label
     static int boardY;
+    // size of the sudoku board
     static int boardSize;
+    // completed board used to current game
     int[][] currBoard;
+    // board displayed at the beginning
     int[][] startingBoard;
+    // current board updated while playing
     int[][] usersBoard;
+    // percentage of the board being displayed to the user
     double difficulty;
+    // users difficulty choice
     int userChoice;
+    // main frame of the game
     JFrame frame;
     Game(JFrame frame, int userChoice) {
 
 
         boardSize = (int)(Play.screenWidth/3);
+        System.out.println(boardSize);
         boardX = (int)(Play.screenWidth/3);
         boardY = (int)(Play.screenHeight/6);
 
@@ -40,13 +54,13 @@ public class Game extends JLabel {
         this.startingBoard = setUpStartingBoard(difficulty, this.currBoard);
 
         //TODO some kind of checker stuff (is fully done?, correctly?)
-//        this.usersBoard = this.startingBoard.clone();
+        this.usersBoard = this.startingBoard.clone();
 
         //TODO learn how to access position/placements of a certain grid cell
 
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
         this.setVisible(true);
-        this.add(new SudokuBoard(this.startingBoard));
+        this.add(new SudokuBoard(this.startingBoard, this));
 
         this.frame.add(this);
     }
@@ -84,14 +98,33 @@ public class Game extends JLabel {
     private double customDifficulty(int userChoice) {
         switch(userChoice) {
             case 0:
-                return Math.random()/5 + 0.4;
+                return Math.random()/5 + 0.45;
             case 1:
-                return Math.random()/5 + 0.25;
+                return Math.random()/5 + 0.30;
             case 2:
-                return Math.random()/5 + 0.15;
+                return Math.random()/5 + 0.20;
             default:
                 return 0.3d;
         }
+    }
+
+    /**
+     * changes the board and adds a number on it
+     * @param row - row on the board to add a number
+     * @param column - column on the board to add a number
+     * @param number - number to add
+     */
+    public void addNumber(int row, int column, int number) {
+        this.usersBoard[row][column] = number;
+        this.repaint();
+    }
+
+    /**
+     * getter for currently stated board
+     * @return - users board
+     */
+    public int[][] getCurrBoard() {
+        return this.usersBoard;
     }
 
     /**
@@ -108,12 +141,41 @@ public class Game extends JLabel {
  */
 class SudokuBoard extends JPanel {
     private int[][] startingBoard;
-    SudokuBoard(int[][] nStartingBoard) {
+    private final Game boardLabel;
+    SudokuBoard(int[][] nStartingBoard, Game label) {
         this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setBackground(Color.WHITE);
         this.setOpaque(true); // for the testing
 
+        this.boardLabel = label;
+
+        MouseListener nl = new NumberListener(this);
+        this.addMouseListener(nl);
+
         this.startingBoard = nStartingBoard;
+    }
+
+    /**
+     * changes the board and adds a number on it and calls a brother method in Game
+     * @param row - row on the board to add a number
+     * @param column - column on the board to add a number
+     * @param number - number to add
+     */
+    public void addNumber(int row, int column, int number) {
+        this.startingBoard[row][column] = number;
+        this.boardLabel.addNumber(row, column, number);
+    }
+    /**
+     * checks if its legal to add a ceratin number to a certain spot
+     * @param row - row that we want to add
+     * @param column - column that we want to add
+     * @param number - number that we want to add
+     * @return true if possible, else false
+     */
+    public boolean canAddNumber(int row, int column, int number) {
+        int[][] tempBoard = this.boardLabel.getCurrBoard().clone();
+        tempBoard[row][column] = number;
+        return Calculator.isCompleted(tempBoard);
     }
 
     @Override
@@ -160,3 +222,50 @@ class SudokuBoard extends JPanel {
     }
 }
 
+class NumberListener implements MouseListener {
+    private SudokuBoard sudokuBoard;
+    NumberListener(SudokuBoard sudokuBoard) {
+        this.sudokuBoard = sudokuBoard;
+    }
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        //TODO set uneditable boxes (starting board)
+        int xCLick = e.getX();
+        int yClick = e.getY();
+
+        int xGrid = (int) ((9*xCLick)/Game.boardSize);
+        int yGrid = (int) ((9*yClick)/Game.boardSize);
+
+        JFrame askFrame = new JFrame("Choose number");
+        askFrame.setLayout(new GridLayout(3,3));
+
+        for ( int i = 1; i <= 9; i++ ) {
+            JButton currButton = new JButton(String.valueOf(i));
+            final int num = i;
+            currButton.addActionListener(e1 -> {
+                if ( this.sudokuBoard.canAddNumber(yGrid, xGrid, num) ) {
+                    this.sudokuBoard.addNumber(yGrid, xGrid, num);
+                    askFrame.dispose();
+                } else {
+                    Play.message("You cannot use that number here");
+                    //TODO maybe some animation of colliding number
+                    askFrame.dispose();
+                }
+
+            });
+            askFrame.add(currButton);
+        }
+
+        askFrame.setSize(250,250);
+        askFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        askFrame.setVisible(true);
+    }
+    @Override
+    public void mousePressed(MouseEvent e) {}
+    @Override
+    public void mouseReleased(MouseEvent e) {}
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+    @Override
+    public void mouseExited(MouseEvent e) {}
+}

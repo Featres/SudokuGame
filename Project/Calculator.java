@@ -24,10 +24,41 @@ public class Calculator {
             {7, 2, 0, 1, 0, 0, 0, 0, 0},
             {0, 9, 0, 0, 0, 0, 2, 0, 0} };
 
+    /**
+     * checks if the board is solved - no zeros and no errors
+     * @param board - board to be checked
+     * @return - true if completed, else false
+     */
+    public static boolean isDoneAndComplete(int[][] board) {
+        return isCompleted(board) && isFullyDone(board);
+    }
+
+    /**
+     * checks if the board is correct - no errors like same number in a row
+     * @param board - board to be checked
+     * @return - true if correctly completed, else false
+     */
+    public static boolean isCompleted(int[][] board) {
+        return checkColumns(board) && checkRows(board) && checkSquares(board);
+    }
+
+    /**
+     * checks if the board is fully completed
+     * @param board - board to be checked
+     * @return - true if it is completed, else false
+     */
+    public static boolean isFullyDone(int[][] board) {
+        for ( int i = 0; i < board.length; i++ ) {
+            for ( int j = 0; j < board[j].length; j++ ) {
+                if ( board[i][j] == 0 ) return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * method where you can pass in an uncompleted board, and it returns completed board
-     * @params:
+     * @param
      * board: uncompleted sudoku board (int[9][9])
      */
     public static int[][] calculateSudoku(int[][] board) {
