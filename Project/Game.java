@@ -214,6 +214,10 @@ class SudokuBoard extends JPanel {
         return Calculator.isCompleted(tempBoard);
     }
 
+    /**
+     * paints the lines of the game board and the numbers from startingBoard
+     * @param g  the <code>Graphics</code> context in which to paint
+     */
     @Override
     public void paint(Graphics g) {
 
@@ -258,6 +262,7 @@ class SudokuBoard extends JPanel {
     }
 }
 
+// listener used on board to add numbers
 class NumberListener implements MouseListener {
     private SudokuBoard sudokuBoard;
     NumberListener(SudokuBoard sudokuBoard) {
@@ -269,9 +274,11 @@ class NumberListener implements MouseListener {
         int xCLick = e.getX();
         int yClick = e.getY();
 
+        // detect which grid cell was clicked
         int xGrid = (int) ((9*xCLick)/Game.boardSize);
         int yGrid = (int) ((9*yClick)/Game.boardSize);
 
+        // create a JFrame with buttons 1-9
         JFrame askFrame = new JFrame("Choose number");
         askFrame.setLayout(new GridLayout(3,3));
 
@@ -279,6 +286,7 @@ class NumberListener implements MouseListener {
             JButton currButton = new JButton(String.valueOf(i));
             final int num = i;
             currButton.addActionListener(e1 -> {
+                // check if the chosen button's number is possible on that place in board
                 if ( this.sudokuBoard.canAddNumber(yGrid, xGrid, num) ) {
                     this.sudokuBoard.addNumber(yGrid, xGrid, num);
                     askFrame.dispose();
