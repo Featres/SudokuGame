@@ -27,6 +27,8 @@ public class Game extends JLabel {
     int[][] currBoard;
     // board displayed at the beginning
     int[][] startingBoard;
+    // positions that are uneditable - they are from starting grid
+    int[][] startingPositions;
     // current board updated while playing
     int[][] usersBoard;
     // percentage of the board being displayed to the user
@@ -52,6 +54,8 @@ public class Game extends JLabel {
         this.difficulty = customDifficulty(this.userChoice);
         System.out.println("Difficulty: "+difficulty);
         this.startingBoard = setUpStartingBoard(difficulty, this.currBoard);
+
+        this.startingPositions = setUpStartingPositions(this.startingBoard);
 
         //TODO some kind of checker stuff (is fully done?, correctly?)
         this.usersBoard = this.startingBoard.clone();
@@ -88,6 +92,33 @@ public class Game extends JLabel {
         System.out.println("Starting board: "+Arrays.deepToString(startingBoard));
 
         return startingBoard;
+    }
+
+    /**
+     * method to set starting positions of numbers, so that they are uneditable
+     * @param board - starting board for the game
+     * @return - poisitons that are uneditable
+     */
+    public int[][] setUpStartingPositions(int[][] board) {
+        int count = 0;
+        for ( int i = 0; i < 9; i++ ) {
+            for ( int j = 0; j < 9; j++ ) {
+                if ( board[i][j] != 0 ) count++;
+            }
+        }
+        int[][] res = new int[count][2];
+        count = 0;
+        for ( int i = 0; i < 9; i++ ) {
+            for ( int j = 0; j < 9; j++ ) {
+                if ( board[i][j] != 0 ) {
+                    res[count][0] = i;
+                    res[count][1] = j;
+                    count++;
+                }
+            }
+        }
+        System.out.println("Reserved positions: " + Arrays.deepToString(res));
+        return res;
     }
 
     /**
@@ -173,6 +204,11 @@ class SudokuBoard extends JPanel {
      * @return true if possible, else false
      */
     public boolean canAddNumber(int row, int column, int number) {
+        int[][] reservedPositions = this.boardLabel.startingPositions.clone();
+        for ( int[] position : reservedPositions ) {
+            //TODO somehow mark those reserved positions
+            if ( Arrays.equals(position, new int[] {row, column}) ) return false;
+        }
         int[][] tempBoard = this.boardLabel.getCurrBoard().clone();
         tempBoard[row][column] = number;
         return Calculator.isCompleted(tempBoard);
@@ -251,7 +287,6 @@ class NumberListener implements MouseListener {
                     //TODO maybe some animation of colliding number
                     askFrame.dispose();
                 }
-
             });
             askFrame.add(currButton);
         }
