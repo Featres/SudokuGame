@@ -8,7 +8,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
 /**
