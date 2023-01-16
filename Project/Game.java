@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
 /**
@@ -57,7 +58,6 @@ public class Game extends JLabel {
 
         this.startingPositions = setUpStartingPositions(this.startingBoard);
 
-        //TODO some kind of checker stuff (is fully done?, correctly?)
         this.usersBoard = this.startingBoard.clone();
 
         //TODO learn how to access position/placements of a certain grid cell
@@ -65,6 +65,9 @@ public class Game extends JLabel {
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
         this.setVisible(true);
         this.add(new SudokuBoard(this.startingBoard, this));
+
+        FunctionalLabel functionalLabel = new FunctionalLabel(this.frame);
+        this.add(functionalLabel);
 
         this.frame.add(this);
     }
@@ -171,7 +174,7 @@ public class Game extends JLabel {
  * label that will be added to the game, where the sudoku board will be displayed
  */
 class SudokuBoard extends JPanel {
-    private int[][] startingBoard;
+    private final int[][] startingBoard;
     private final Game boardLabel;
     SudokuBoard(int[][] nStartingBoard, Game label) {
         this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
@@ -180,7 +183,7 @@ class SudokuBoard extends JPanel {
 
         this.boardLabel = label;
 
-        MouseListener nl = new NumberListener(this);
+        MouseListener nl = new NumberListener(this, this.boardLabel);
         this.addMouseListener(nl);
 
         this.startingBoard = nStartingBoard;
@@ -206,12 +209,14 @@ class SudokuBoard extends JPanel {
     public boolean canAddNumber(int row, int column, int number) {
         int[][] reservedPositions = this.boardLabel.startingPositions.clone();
         for ( int[] position : reservedPositions ) {
-            //TODO somehow mark those reserved positions
-            if ( Arrays.equals(position, new int[] {row, column}) ) return false;
+            //TODO somehow mark those positions, that collide
+            if ( row == position[0] && column == position[1] ) return false;
         }
         int[][] tempBoard = this.boardLabel.getCurrBoard().clone();
         tempBoard[row][column] = number;
-        return Calculator.isCompleted(tempBoard);
+        boolean allowance = Calculator.isCompleted(tempBoard);
+        tempBoard[row][column] = 0;
+        return allowance;
     }
 
     /**
@@ -260,23 +265,39 @@ class SudokuBoard extends JPanel {
             }
         }
     }
+
+    /**
+     * getter for the starting board
+     * @return starting board
+     */
+    public int[][] getStartingBoard() { return this.startingBoard; }
 }
 
 // listener used on board to add numbers
 class NumberListener implements MouseListener {
-    private SudokuBoard sudokuBoard;
-    NumberListener(SudokuBoard sudokuBoard) {
+    private final SudokuBoard sudokuBoard;
+    private final Game game;
+    NumberListener(SudokuBoard sudokuBoard, Game game) {
         this.sudokuBoard = sudokuBoard;
+        this.game = game;
     }
     @Override
     public void mouseClicked(MouseEvent e) {
-        //TODO set uneditable boxes (starting board)
         int xCLick = e.getX();
         int yClick = e.getY();
 
         // detect which grid cell was clicked
         int xGrid = (int) ((9*xCLick)/Game.boardSize);
         int yGrid = (int) ((9*yClick)/Game.boardSize);
+
+        int[][] startingPositions = this.game.startingPositions;
+        System.out.println("checking starting pos "+Arrays.deepToString(startingPositions));
+        for ( int[] position : startingPositions ) {
+            if ( yGrid == position[0] && xGrid == position[1] ) {
+                Play.message("This is a starting cell - you can't edit it");
+                return;
+            }
+        }
 
         // create a JFrame with buttons 1-9
         JFrame askFrame = new JFrame("Choose number");
@@ -311,4 +332,34 @@ class NumberListener implements MouseListener {
     public void mouseEntered(MouseEvent e) {}
     @Override
     public void mouseExited(MouseEvent e) {}
+}
+
+/**
+ * class that will manage all the labels around the sudoku board
+ */
+class FunctionalLabel extends JPanel {
+    private final JFrame frame;
+    public FunctionalLabel(JFrame frame) {
+        this.frame = frame;
+        this.add(new iAmDoneLabel(this.frame));
+    }
+
+    /**
+     * label, that clicked by the user triggers the checker,
+     */
+    class iAmDoneLabel extends JLabel {
+        public iAmDoneLabel(JFrame frame) {
+            this.setText("I am done!");
+
+            int frameWidth = frame.getWidth();
+            int frameHeight = frame.getHeight();
+
+            this.setBounds((int)(frameWidth*0.15), (int)(frameHeight*0.1), (int)(frameWidth*0.75), (int)(frameHeight*0.8));
+
+            this.setBackground(Color.BLUE);
+
+            System.out.println("I am done popping");
+            this.setVisible(true);
+        }
+    }
 }
