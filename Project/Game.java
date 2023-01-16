@@ -2,8 +2,6 @@ package Project;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Line2D;
@@ -65,8 +63,8 @@ public class Game extends JLabel {
         this.setVisible(true);
         this.add(new SudokuBoard(this.startingBoard, this));
 
-        FunctionalLabel functionalLabel = new FunctionalLabel(this.frame);
-        this.add(functionalLabel);
+        FunctionalPanel functionalPanel = new FunctionalPanel(this);
+        this.add(functionalPanel);
 
         this.frame.add(this);
     }
@@ -159,6 +157,12 @@ public class Game extends JLabel {
     public int[][] getCurrBoard() {
         return this.usersBoard;
     }
+
+    /**
+     * getter for the jframe frame
+     * @return - frame of the game
+     */
+    public JFrame getFrame() { return this.frame; }
 
     /**
      *  a method that can access Games visibility
@@ -336,29 +340,102 @@ class NumberListener implements MouseListener {
 /**
  * class that will manage all the labels around the sudoku board
  */
-class FunctionalLabel extends JPanel {
+class FunctionalPanel extends JPanel {
     private final JFrame frame;
-    public FunctionalLabel(JFrame frame) {
-        this.frame = frame;
-        this.add(new iAmDoneLabel(this.frame));
+    private final Game game;
+    public FunctionalPanel(Game game) {
+        this.frame = game.getFrame();
+        this.game = game;
+        this.setLayout(null);
+
+        int frameWidth = frame.getWidth();
+        int frameHeight = frame.getHeight();
+
+        this.setBounds(0, 0, frameWidth, frameHeight);
+        this.add(new iAmDoneLabel(this));
+
+        this.setOpaque(false);
+        this.setVisible(true);
     }
 
     /**
+     * getter for width
+     * @return width of the object
+     */
+    public int getWidth() { return this.frame.getWidth(); }
+
+    /**
+     * getter for height
+     * @return width of the object
+     */
+    public int getHeight() { return this.frame.getHeight(); }
+
+    /**
+     * getter for the game
+     * @return - current game class object
+     */
+    public Game getGame() { return this.game; }
+
+    /**
      * label, that clicked by the user triggers the checker,
+     * has a white, centered, big text "i am done"
+     * positioned regarding frame size
      */
     class iAmDoneLabel extends JLabel {
-        public iAmDoneLabel(JFrame frame) {
+        public iAmDoneLabel(FunctionalPanel panel) {
+            Font myFont = new Font("Comic Sans", Font.PLAIN, 44);
+            this.setFont(myFont);
+            this.setHorizontalAlignment(SwingConstants.CENTER);
+            this.setVerticalAlignment(SwingConstants.CENTER);
+            this.setForeground(Color.WHITE);
             this.setText("I am done!");
 
-            int frameWidth = frame.getWidth();
-            int frameHeight = frame.getHeight();
+            int panelWidth = panel.getWidth();
+            int panelHeight = panel.getHeight();
 
-            this.setBounds((int)(frameWidth*0.15), (int)(frameHeight*0.1), (int)(frameWidth*0.75), (int)(frameHeight*0.8));
+            this.setBounds((int)(panelWidth*0.75), (int)(panelHeight*0.8), (int)(panelWidth*0.15), (int)(panelHeight*0.1));
 
             this.setBackground(Color.BLUE);
 
+            Game currGame = panel.getGame();
+            IAmDoneListener myListener = new IAmDoneListener(currGame);
+            this.addMouseListener(myListener);
+
             System.out.println("I am done popping");
+            this.setOpaque(true);
             this.setVisible(true);
         }
+    }
+
+    /**
+     * mouse listener for i am done label in gameview
+     * whenever called, calls Calculator is done and complete
+     * and gives feedback to the user
+     */
+    class IAmDoneListener implements MouseListener {
+        private final Game game;
+        public IAmDoneListener(Game game) { this.game = game; }
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            int[][] currBoard = game.getCurrBoard();
+
+            boolean isDoneAndComplete = Calculator.isDoneAndComplete(currBoard);
+            // TODO game finish
+            if ( isDoneAndComplete ) {
+                System.out.println("Game ended");
+                return;
+            }
+
+            boolean isDone = Calculator.isFullyDone(currBoard);
+            if ( !isDone ) Play.message("You didn't finish Your board yet! Good luck!");
+        }
+        @Override
+        public void mousePressed(MouseEvent e) {}
+        @Override
+        public void mouseReleased(MouseEvent e) {}
+        @Override
+        public void mouseEntered(MouseEvent e) {}
+        @Override
+        public void mouseExited(MouseEvent e) {}
     }
 }
