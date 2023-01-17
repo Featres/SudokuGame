@@ -49,9 +49,9 @@ public class Calculator {
      * @return - true if it is completed, else false
      */
     public static boolean isFullyDone(int[][] board) {
-        for ( int i = 0; i < board.length; i++ ) {
-            for ( int j = 0; j < board[j].length; j++ ) {
-                if ( board[i][j] == 0 ) return false;
+        for (int[] row : board) {
+            for (int num : row) {
+                if (num == 0) return false;
             }
         }
         return true;

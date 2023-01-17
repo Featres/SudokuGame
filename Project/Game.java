@@ -8,6 +8,10 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
 
+// TODO add counter: counter of ones and so on
+// TODO add timer
+// TODO give up - bot finish
+
 /**
  * class where user plays the game
  * implementation:
@@ -36,7 +40,6 @@ public class Game extends JLabel {
     // main frame of the game
     JFrame frame;
     Game(JFrame frame, int userChoice) {
-
 
         boardSize = (int)(Play.screenWidth/3);
         System.out.println(boardSize);
@@ -67,6 +70,7 @@ public class Game extends JLabel {
         this.add(functionalPanel);
 
         this.frame.add(this);
+
     }
 
     /**
@@ -231,26 +235,26 @@ class SudokuBoard extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g;
 
-        int size = Game.boardSize/9;
-        int startX = 0;
-        int startY = 0;
+        final int SIZE = Game.boardSize/9;
+        final int STARTX = 0;
+        final int STARTY = 0;
 
-        g2.setStroke(new BasicStroke(6));
+        g2.setStroke(new BasicStroke(3));
         g2.setColor(Color.BLACK);
 
-        int fontSize = 80;
+        int fontSize = 60;
         Font f = new Font("Comic Sans MS", Font.PLAIN, fontSize);
         g2.setFont(f);
 
         for ( int row = 0; row < 9; row++ ) {
             for ( int column = 0; column < 9; column++ ) {
-                int currX = row*size;
-                int currY = column*size;
+                int currX = row*SIZE;
+                int currY = column*SIZE;
 
-                Point2D startPoint = new Point2D.Double(startX + currX, startY + currY);
-                Point2D topRightPoint = new Point2D.Double(startX + currX + size, startY + currY);
-                Point2D bottomLeftPoint = new Point2D.Double(startX + currX, startY + currY + size);
-                Point2D bottomRightPoint = new Point2D.Double(startX + currX + size, startY + currY + size);
+                Point2D startPoint = new Point2D.Double(STARTX + currX, STARTY + currY);
+                Point2D topRightPoint = new Point2D.Double(STARTX + currX + SIZE, STARTY + currY);
+                Point2D bottomLeftPoint = new Point2D.Double(STARTX + currX, STARTY + currY + SIZE);
+                Point2D bottomRightPoint = new Point2D.Double(STARTX + currX + SIZE, STARTY + currY + SIZE);
 
                 Line2D topLine = new Line2D.Double(startPoint, topRightPoint);
                 Line2D rightLine = new Line2D.Double(topRightPoint, bottomRightPoint);
@@ -262,10 +266,46 @@ class SudokuBoard extends JPanel {
                 g2.draw(bottomLine);
                 g2.draw(leftLine);
 
+                // draw numbers
                 if ( this.startingBoard[column][row] != 0 ) {
-                    g2.drawString(String.valueOf(this.startingBoard[column][row]), startX + currX + 10, startY + currY + size - 5);
+                    g2.drawString(String.valueOf(this.startingBoard[column][row]), STARTX + currX + 20, STARTY + currY + SIZE - 10 );
                 }
             }
+        }
+
+        // lines around the board will be bigger
+        g2.setStroke(new BasicStroke(15));
+
+        Point2D startPoint = new Point2D.Double(STARTX, STARTY);
+        Point2D topRightPoint = new Point2D.Double(STARTX + 9*SIZE, STARTY);
+        Point2D bottomLeftPoint = new Point2D.Double(STARTX, STARTY + 9*SIZE);
+        Point2D bottomRightPoint = new Point2D.Double(STARTX + 9*SIZE, STARTY + 9* SIZE);
+
+        Line2D.Double topLine = new Line2D.Double(startPoint, topRightPoint);
+        Line2D.Double rightLine = new Line2D.Double(topRightPoint, bottomRightPoint);
+        Line2D.Double bottomLine = new Line2D.Double(bottomLeftPoint, bottomRightPoint);
+        Line2D.Double leftLine = new Line2D.Double(startPoint, bottomLeftPoint);
+
+        g2.draw(topLine);
+        g2.draw(rightLine);
+        g2.draw(bottomLine);
+        g2.draw(leftLine);
+
+        // lines around squares will be bigger
+        g2.setStroke(new BasicStroke(6));
+        for ( int i = 1; i <= 3; i++ ) {
+            Point2D pointA = new Point2D.Double(STARTX + 3*SIZE*i, STARTY);
+            Point2D pointB = new Point2D.Double(STARTX + 3*SIZE*i, STARTY + SIZE*9);
+
+            Line2D lineA = new Line2D.Double(pointA, pointB);
+
+            Point2D pointC = new Point2D.Double(STARTX, STARTY + 3*SIZE*i);
+            Point2D pointD = new Point2D.Double(STARTX + SIZE*9, STARTY + 3*SIZE*i);
+
+            Line2D lineB = new Line2D.Double(pointC, pointD);
+
+            g2.draw(lineA);
+            g2.draw(lineB);
         }
     }
 
@@ -381,7 +421,7 @@ class FunctionalPanel extends JPanel {
      * has a white, centered, big text "i am done"
      * positioned regarding frame size
      */
-    class iAmDoneLabel extends JLabel {
+    static class iAmDoneLabel extends JLabel {
         public iAmDoneLabel(FunctionalPanel panel) {
             Font myFont = new Font("Comic Sans", Font.PLAIN, 44);
             this.setFont(myFont);
@@ -412,22 +452,28 @@ class FunctionalPanel extends JPanel {
      * whenever called, calls Calculator is done and complete
      * and gives feedback to the user
      */
-    class IAmDoneListener implements MouseListener {
+    static class IAmDoneListener implements MouseListener {
         private final Game game;
         public IAmDoneListener(Game game) { this.game = game; }
         @Override
         public void mouseClicked(MouseEvent e) {
             int[][] currBoard = game.getCurrBoard();
 
+            boolean isDone = Calculator.isFullyDone(currBoard);
             boolean isDoneAndComplete = Calculator.isDoneAndComplete(currBoard);
-            // TODO game finish
-            if ( isDoneAndComplete ) {
+
+            // TODO game finish (better)
+            if ( !isDone ) Play.message("You didn't finish Your board yet! Good luck!");
+            else if ( isDoneAndComplete ) {
                 System.out.println("Game ended");
-                return;
+                Play.message("Congrats! You won the game!!!");
+
+                JFrame currFrame = this.game.getFrame();
+                currFrame.dispose();
+
+                new Menu();
             }
 
-            boolean isDone = Calculator.isFullyDone(currBoard);
-            if ( !isDone ) Play.message("You didn't finish Your board yet! Good luck!");
         }
         @Override
         public void mousePressed(MouseEvent e) {}
