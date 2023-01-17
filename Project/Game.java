@@ -393,6 +393,7 @@ class FunctionalPanel extends JPanel {
 
         this.setBounds(0, 0, frameWidth, frameHeight);
         this.add(new iAmDoneLabel(this));
+        this.add(new SideCounter(this));
 
         this.setOpaque(false);
         this.setVisible(true);
@@ -415,6 +416,51 @@ class FunctionalPanel extends JPanel {
      * @return - current game class object
      */
     public Game getGame() { return this.game; }
+
+    /**
+     * class/label that will show how many ones, twos etc. user already has in the board
+     */
+    static class SideCounter extends JLabel {
+        private final Game game;
+        private int[] numData; //[to be completed, num of ones, num of twos...]
+        public SideCounter(FunctionalPanel panel) {
+            this.game = panel.getGame();
+
+            this.numData = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            int[][] currBoard = game.getCurrBoard();
+            this.numData = updateNumData(currBoard);
+
+            int panelWidth = panel.getWidth();
+            int panelHeight = panel.getHeight();
+
+            int labelHeight = (int)(panelHeight*0.5);
+
+            // TODO repaint call
+            // TODO do the looks of the label
+
+            this.setBounds((int)(panelWidth*0.75), (int)(panelHeight*0.1), (int)(panelWidth*0.15), (int)(panelHeight*0.5));
+
+            this.setBackground(Color.GRAY);
+            this.setOpaque(true);
+
+            this.setVisible(true);
+        }
+
+        /**
+         * method to refresh the data of amount of different values
+         * @param board - current state of the board in the game
+         * @return new, updated int[] numData array
+         */
+        private int[] updateNumData(int[][] board) {
+            int[] result = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            for ( int[] row : board ) {
+                for ( int num : row ) {
+                    result[num]++;
+                }
+            }
+            return result;
+        }
+    }
 
     /**
      * label, that clicked by the user triggers the checker,
