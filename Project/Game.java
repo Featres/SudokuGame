@@ -6,6 +6,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 // TODO add counter: counter of ones and so on
@@ -454,11 +455,14 @@ class FunctionalPanel extends JPanel {
      * class/label that will show how many ones, twos etc. user already has in the board
      */
     static class SideCounter extends JLabel {
+        private final static String[] comments = {"To be completed: ", "Ones: ", "Twos: ", "Threes: ", "Fours: ",
+                "Fives: ", "Sixes: ", "Sevens: ", "Eights: ", "Nines: "};
         private final Game game;
         private int[] numData; //[to be completed, num of ones, num of twos...]
         private final int labelHeight;
         private final int width;
         private final int height;
+        ArrayList<JLabel> myLabels = new ArrayList<JLabel>();
         public SideCounter(FunctionalPanel panel) {
             this.game = panel.getGame();
 
@@ -479,6 +483,19 @@ class FunctionalPanel extends JPanel {
             this.height = labelHeight;
 
             this.add(labels());
+
+            Font titleFont = new Font("Comic Sans", Font.PLAIN, 35);
+
+            JLabel title = new JLabel("COUNTER", SwingConstants.CENTER);
+            title.setBounds(0, 0, width, (int)(this.labelHeight/12));
+            title.setFont(titleFont);
+            title.setBackground(Color.RED);
+            title.setForeground(Color.BLACK);
+            title.setVisible(true);
+
+            this.add(title);
+
+            // TODO make title work
 
             this.setOpaque(true);
             this.setVisible(true);
@@ -504,9 +521,6 @@ class FunctionalPanel extends JPanel {
             final int HEIGHTPART = (int)(LABELHEIGHT/12);
             final int[] DATA = this.numData;
 
-            String[] comments = {"To be completed: ", "Ones: ", "Twos: ", "Threes: ", "Fours: ",
-                                "Fives: ", "Sixes: ", "Sevens: ", "Eights: ", "Nines: "};
-
             for ( int i = 0; i < DATA.length; i++ ) {
                 final int YCORDINATE = HEIGHTPART*(i+1);
                 final String s = comments[i] + DATA[i];
@@ -520,6 +534,8 @@ class FunctionalPanel extends JPanel {
                 currLabel.setBackground(Color.GRAY);
                 currLabel.setBounds(XCORDINATE, YCORDINATE, width, HEIGHTPART);
                 currLabel.setVisible(true);
+
+                myLabels.add(currLabel);
 
                 mainLabel.add(currLabel);
             }
@@ -551,8 +567,13 @@ class FunctionalPanel extends JPanel {
         public void updateNumDataLabel() {
             int[][] board = this.game.getCurrBoard();
             this.numData = updateNumData(board);
-            repaint();
-            // TODO it doesn't quite work
+            int[] data = this.numData;
+
+            for ( int i = 0; i < myLabels.size(); i++ ) {
+                String s = comments[i] + data[i];
+
+                myLabels.get(i).setText(s);
+            }
         }
     }
 
