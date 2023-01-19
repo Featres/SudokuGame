@@ -39,7 +39,7 @@ public class Calculator {
      * @return - true if correctly completed, else false
      */
     public static boolean isCompleted(int[][] board) {
-        System.out.println("Testing allowance "+Arrays.deepToString(board));
+//        System.out.println("Testing allowance "+Arrays.deepToString(board));
         return checkColumns(board) && checkRows(board) && checkSquares(board);
     }
 
@@ -120,7 +120,7 @@ public class Calculator {
             for ( int i = 0; i < 9; i++ ) {
                 nums[i] = board[row][i];
             }
-            System.out.println("Row "+ Arrays.toString(nums));
+//            System.out.println("Row "+ Arrays.toString(nums));
             Arrays.sort(nums);
             for ( int i = 0; i < 8; i++ ) {
                 if ( nums[i] != 0 && nums[i] == nums[i+1] ) {
@@ -144,7 +144,7 @@ public class Calculator {
             for ( int i = 0; i < 9; i++ ) {
                 nums[i] = board[i][column];
             }
-            System.out.println("Column "+ Arrays.toString(nums));
+//            System.out.println("Column "+ Arrays.toString(nums));
             Arrays.sort(nums);
             for ( int i = 0; i < 8; i++ ) {
                 if ( nums[i] != 0 && nums[i] == nums[i+1] ) {
@@ -173,7 +173,7 @@ public class Calculator {
                     }
                 }
                 h = 0;
-                System.out.println("Square "+Arrays.toString(nums));
+//                System.out.println("Square "+Arrays.toString(nums));
                 Arrays.sort(nums);
                 for ( int m = 0; m < 8; m++ ) {
                     if ( nums[m] != 0 && nums[m] == nums[m+1] ) return false;

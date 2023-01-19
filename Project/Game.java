@@ -39,6 +39,8 @@ public class Game extends JLabel {
     int userChoice;
     // main frame of the game
     JFrame frame;
+    private SudokuBoard sudokuBoard;
+    private FunctionalPanel functionalPanel;
     Game(JFrame frame, int userChoice) {
 
         boardSize = (int)(Play.screenWidth/3);
@@ -64,10 +66,14 @@ public class Game extends JLabel {
 
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
         this.setVisible(true);
-        this.add(new SudokuBoard(this.startingBoard, this));
+
+        SudokuBoard sudokuBoard = new SudokuBoard(this.startingBoard, this);
+        this.add(sudokuBoard);
+        this.sudokuBoard = sudokuBoard;
 
         FunctionalPanel functionalPanel = new FunctionalPanel(this);
         this.add(functionalPanel);
+        this.functionalPanel = functionalPanel;
 
         this.frame.add(this);
 
@@ -175,6 +181,18 @@ public class Game extends JLabel {
     public void setVisibility(boolean newVisible) {
         this.setVisible(newVisible);
     }
+
+    /**
+     * getter for the sudoku board
+     * @return - current, used sudoku board object
+     */
+    public SudokuBoard getSudokuBoard() { return this.sudokuBoard; }
+
+    /**
+     * getter for the functional panel
+     * @return - current, used functional panel object
+     */
+    public FunctionalPanel getFunctionalPanel() { return this.functionalPanel; }
 }
 
 /**
@@ -205,9 +223,12 @@ class SudokuBoard extends JPanel {
     public void addNumber(int row, int column, int number) {
         this.startingBoard[row][column] = number;
         this.boardLabel.addNumber(row, column, number);
+
+        FunctionalPanel functionalPanel = this.boardLabel.getFunctionalPanel();
+        functionalPanel.updateSideCounter();
     }
     /**
-     * checks if its legal to add a ceratin number to a certain spot
+     * checks if its legal to add a certain number to a certain spot
      * @param row - row that we want to add
      * @param column - column that we want to add
      * @param number - number that we want to add
@@ -383,6 +404,7 @@ class NumberListener implements MouseListener {
 class FunctionalPanel extends JPanel {
     private final JFrame frame;
     private final Game game;
+    private SideCounter sideCounter;
     public FunctionalPanel(Game game) {
         this.frame = game.getFrame();
         this.game = game;
@@ -392,8 +414,13 @@ class FunctionalPanel extends JPanel {
         int frameHeight = frame.getHeight();
 
         this.setBounds(0, 0, frameWidth, frameHeight);
-        this.add(new iAmDoneLabel(this));
-        this.add(new SideCounter(this));
+
+        IAmDoneLabel iAmDoneLabel = new IAmDoneLabel(this);
+        this.add(iAmDoneLabel);
+
+        SideCounter sideCounter = new SideCounter(this);
+        this.add(sideCounter);
+        this.sideCounter = sideCounter;
 
         this.setOpaque(false);
         this.setVisible(true);
@@ -418,32 +445,87 @@ class FunctionalPanel extends JPanel {
     public Game getGame() { return this.game; }
 
     /**
+     * method for an easier access of updating the side
+     * counter numbers
+     */
+    public void updateSideCounter() { this.sideCounter.updateNumDataLabel(); }
+
+    /**
      * class/label that will show how many ones, twos etc. user already has in the board
      */
     static class SideCounter extends JLabel {
         private final Game game;
         private int[] numData; //[to be completed, num of ones, num of twos...]
+        private final int labelHeight;
+        private final int width;
+        private final int height;
         public SideCounter(FunctionalPanel panel) {
             this.game = panel.getGame();
 
-            this.numData = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
             int[][] currBoard = game.getCurrBoard();
+
             this.numData = updateNumData(currBoard);
 
             int panelWidth = panel.getWidth();
             int panelHeight = panel.getHeight();
 
             int labelHeight = (int)(panelHeight*0.5);
+            this.labelHeight = labelHeight;
 
-            // TODO repaint call
             // TODO do the looks of the label
 
-            this.setBounds((int)(panelWidth*0.75), (int)(panelHeight*0.1), (int)(panelWidth*0.15), (int)(panelHeight*0.5));
+            this.setBounds((int)(panelWidth*0.75), (int)(panelHeight*0.1), (int)(panelWidth*0.15), labelHeight);
+            this.width = (int)(panelWidth*0.15);
+            this.height = labelHeight;
 
-            this.setBackground(Color.GRAY);
+            this.add(labels());
+
             this.setOpaque(true);
-
             this.setVisible(true);
+        }
+
+        /**
+         * paint all the data:
+         * - free cells
+         * - number of cells of every number
+         */
+        private JLabel labels() {
+            JLabel mainLabel = new JLabel();
+
+            int width = this.width;
+            int height = this.height;
+            mainLabel.setBounds(0, 0, width, height);
+
+            mainLabel.setBackground(Color.GRAY);
+            mainLabel.setOpaque(true);
+
+            final int XCORDINATE = 0;
+            final int LABELHEIGHT = this.labelHeight;
+            final int HEIGHTPART = (int)(LABELHEIGHT/12);
+            final int[] DATA = this.numData;
+
+            String[] comments = {"To be completed: ", "Ones: ", "Twos: ", "Threes: ", "Fours: ",
+                                "Fives: ", "Sixes: ", "Sevens: ", "Eights: ", "Nines: "};
+
+            for ( int i = 0; i < DATA.length; i++ ) {
+                final int YCORDINATE = HEIGHTPART*(i+1);
+                final String s = comments[i] + DATA[i];
+
+                int fontSize = 20;
+                Font myFont = new Font("Comic Sans MS", Font.PLAIN, fontSize);
+
+                JLabel currLabel = new JLabel(s, SwingConstants.CENTER);
+                currLabel.setFont(myFont);
+                currLabel.setForeground(Color.BLACK);
+                currLabel.setBackground(Color.GRAY);
+                currLabel.setBounds(XCORDINATE, YCORDINATE, width, HEIGHTPART);
+                currLabel.setVisible(true);
+
+                mainLabel.add(currLabel);
+            }
+
+            mainLabel.setVisible(true);
+            return mainLabel;
         }
 
         /**
@@ -460,6 +542,18 @@ class FunctionalPanel extends JPanel {
             }
             return result;
         }
+
+        /**
+         * void method called to repaint the label with numbers using
+         * new, correct data about the numbers, should be called
+         * whenever user changes anything on the board
+         */
+        public void updateNumDataLabel() {
+            int[][] board = this.game.getCurrBoard();
+            this.numData = updateNumData(board);
+            repaint();
+            // TODO it doesn't quite work
+        }
     }
 
     /**
@@ -467,8 +561,8 @@ class FunctionalPanel extends JPanel {
      * has a white, centered, big text "i am done"
      * positioned regarding frame size
      */
-    static class iAmDoneLabel extends JLabel {
-        public iAmDoneLabel(FunctionalPanel panel) {
+    static class IAmDoneLabel extends JLabel {
+        public IAmDoneLabel(FunctionalPanel panel) {
             Font myFont = new Font("Comic Sans", Font.PLAIN, 44);
             this.setFont(myFont);
             this.setHorizontalAlignment(SwingConstants.CENTER);
@@ -487,7 +581,6 @@ class FunctionalPanel extends JPanel {
             IAmDoneListener myListener = new IAmDoneListener(currGame);
             this.addMouseListener(myListener);
 
-            System.out.println("I am done popping");
             this.setOpaque(true);
             this.setVisible(true);
         }
