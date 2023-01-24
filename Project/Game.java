@@ -2,16 +2,16 @@ package Project;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
-// TODO add counter: counter of ones and so on
-// TODO add timer
-// TODO give up - bot finish
 
 /**
  * class where user plays the game
@@ -63,8 +63,6 @@ public class Game extends JLabel {
 
         this.usersBoard = this.startingBoard.clone();
 
-        //TODO learn how to access position/placements of a certain grid cell
-
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
         this.setVisible(true);
 
@@ -77,7 +75,6 @@ public class Game extends JLabel {
         this.functionalPanel = functionalPanel;
 
         this.frame.add(this);
-
     }
 
     /**
@@ -170,6 +167,12 @@ public class Game extends JLabel {
     }
 
     /**
+     * setter for the current board
+     * @param nCurrBoard - new board, that is going to be set as current board in game object
+     */
+    public void setCurrBoard(int[][] nCurrBoard) { this.usersBoard = nCurrBoard; }
+
+    /**
      * getter for the jframe frame
      * @return - frame of the game
      */
@@ -209,7 +212,7 @@ class SudokuBoard extends JPanel {
 
         this.boardLabel = label;
 
-        MouseListener nl = new NumberListener(this, this.boardLabel);
+        NumberListener nl = new NumberListener(this, this.boardLabel);
         this.addMouseListener(nl);
 
         this.startingBoard = nStartingBoard;
@@ -238,7 +241,6 @@ class SudokuBoard extends JPanel {
     public boolean canAddNumber(int row, int column, int number) {
         int[][] reservedPositions = this.boardLabel.startingPositions.clone();
         for ( int[] position : reservedPositions ) {
-            //TODO somehow mark those positions, that collide
             if ( row == position[0] && column == position[1] ) return false;
         }
         int[][] tempBoard = this.boardLabel.getCurrBoard().clone();
@@ -356,7 +358,7 @@ class NumberListener implements MouseListener {
         int yGrid = (int) ((9*yClick)/Game.boardSize);
 
         int[][] startingPositions = this.game.startingPositions;
-        System.out.println("checking starting pos "+Arrays.deepToString(startingPositions));
+//        System.out.println("checking starting pos "+Arrays.deepToString(startingPositions));
         for ( int[] position : startingPositions ) {
             if ( yGrid == position[0] && xGrid == position[1] ) {
                 Play.message("This is a starting cell - you can't edit it");
@@ -423,6 +425,12 @@ class FunctionalPanel extends JPanel {
         this.add(sideCounter);
         this.sideCounter = sideCounter;
 
+        TimerLabel timerLabel = new TimerLabel(this);
+        this.add(timerLabel);
+
+        BotLabel botLabel = new BotLabel(this);
+        this.add(botLabel);
+
         this.setOpaque(false);
         this.setVisible(true);
     }
@@ -452,6 +460,185 @@ class FunctionalPanel extends JPanel {
     public void updateSideCounter() { this.sideCounter.updateNumDataLabel(); }
 
     /**
+     * label that will be a button for the user to click,
+     * whenever he is done and needs help from the algorithm,
+     * to finish his work
+     */
+    static class BotLabel extends JLabel {
+        private final FunctionalPanel panel;
+        BotLabel(FunctionalPanel nPanel) {
+            this.panel = nPanel;
+
+            this.setBackground(Color.CYAN);
+            this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 5));
+            this.setText("Help me! Let the bot finish");
+            this.setHorizontalAlignment(CENTER);
+            this.setVerticalAlignment(CENTER);
+            this.setOpaque(true);
+
+            Font myFont = new Font("Comic Sans", Font.PLAIN, 25);
+            this.setFont(myFont);
+
+            int panelWidth = panel.getWidth();
+            int panelHeight = panel.getHeight();
+            this.setBounds((int)(panelWidth*0.1), (int)(panelHeight*0.75), (int)(panelWidth*0.2), (int)(panelHeight*0.07));
+
+            BotSolvingMouseListener botSolvingMouseListener = new BotSolvingMouseListener(this.panel);
+            this.addMouseListener(botSolvingMouseListener);
+
+            this.setVisible(true);
+        }
+
+        /**
+         * label that being triggered starts the input
+         * of correct solution on the board
+         * by the code in mouse listener
+         */
+        static class BotSolvingMouseListener implements MouseListener {
+            private final FunctionalPanel panel;
+            private final Game game;
+            private final SudokuBoard sudokuBoard;
+            BotSolvingMouseListener(FunctionalPanel nPanel) {
+                this.panel = nPanel;
+
+                this.game = this.panel.getGame();
+
+                this.sudokuBoard = this.game.getSudokuBoard();
+            }
+
+            /**
+             * firstly user is asked whether he is sure
+             * then the current board is being read and a
+             * goal board is created (solution)
+             * (boards can have multiple solutions and users progress
+             * might have influenced how the game will work
+             * @param e the event to be processed
+             */
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int areYouSure = JOptionPane.showOptionDialog(new JFrame(),
+                        "Do you want the bot to solve the game for you?",
+                        "Are you sure?",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        new String[] {"Yes, I am sure", "No, take me back"},
+                        1);
+                if ( areYouSure != 0 ) {
+                    System.out.println("Not running the bot");
+                    return;
+                }
+                System.out.println("Running the bot");
+
+                int[][] currBoard = this.game.getCurrBoard();
+                int[][] goalBoard = null;
+
+                try {
+                    int[][] currBoardCopy = new int[9][9];
+                    for ( int i = 0; i < currBoardCopy.length; i++ ) {
+                        for ( int j = 0; j < currBoardCopy[i].length; j++ ) {
+                            currBoardCopy[i][j] = currBoard[i][j];
+                        }
+                    }
+                    goalBoard = Calculator.calculateSudoku(currBoardCopy);
+                } catch(Exception exception) {
+                    Play.message("Your current sudoku board is impossible to solve, you made some errors ;(");
+                    return;
+                }
+
+                int x = 0;
+                int y = 0;
+                // TODO make this work!!!
+                while ( true ) {
+                    this.game.setCurrBoard(currBoard);
+                    if ( x == 9 ) {
+                        x = 0;
+                        y += 1;
+                        if ( y == 9 ) break;
+                    }
+
+                    currBoard = this.game.getCurrBoard();
+                    if ( currBoard[y][x] != 0 ) {
+                        x++;
+                        continue;
+                    }
+
+                    int tmp = goalBoard[y][x];
+                    this.sudokuBoard.addNumber(y, x, tmp);
+
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException exception) {
+                        throw new RuntimeException(exception);
+                    }
+
+                    x++;
+                }
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {}
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        }
+    }
+
+    /**
+     * label that will show how much time it took the user
+     */
+    static class TimerLabel extends JLabel {
+        public TimerLabel(FunctionalPanel panel) {
+            TimerActionListener timerActionListener = new TimerActionListener(this);
+
+            int delay = 1000; // in ms
+            Timer myTimer = new Timer(delay, timerActionListener);
+            myTimer.setRepeats(true);
+            myTimer.start();
+
+            this.setOpaque(false);
+            this.setText("00:00");
+            this.setForeground(Color.BLACK);
+            this.setHorizontalAlignment(CENTER);
+            this.setVerticalAlignment(CENTER);
+
+            this.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY,8));
+
+            int panelWidth = panel.getWidth();
+            int panelHeight = panel.getHeight();
+            this.setBounds((int)(panelWidth*0.15), (int)(panelHeight*0.25), (int)(panelWidth*0.09), (int)(panelHeight*0.08));
+
+            Font myFont = new Font("Comic Sans", Font.PLAIN, 50);
+            this.setFont(myFont);
+
+            this.setVisible(true);
+        }
+
+        /**
+         * action listener used for the time label,
+         * has a variable of seconds, updates it every second,
+         * and updates the text on the label
+         */
+        static class TimerActionListener implements ActionListener {
+            private final JLabel showTimeLabel;
+            private int seconds;
+            TimerActionListener(JLabel nLabel) {
+                this.showTimeLabel = nLabel;
+                this.seconds = 0;
+            }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                this.seconds += 1;
+                // in 'mm:ss'
+                String timeFormat = String.format("%02d", (int)(seconds/60)) + ":" + String.format("%02d", (seconds%60));
+                this.showTimeLabel.setText(timeFormat);
+            }
+        }
+    }
+
+    /**
      * class/label that will show how many ones, twos etc. user already has in the board
      */
     static class SideCounter extends JLabel {
@@ -476,26 +663,11 @@ class FunctionalPanel extends JPanel {
             int labelHeight = (int)(panelHeight*0.5);
             this.labelHeight = labelHeight;
 
-            // TODO do the looks of the label
-
             this.setBounds((int)(panelWidth*0.75), (int)(panelHeight*0.1), (int)(panelWidth*0.15), labelHeight);
             this.width = (int)(panelWidth*0.15);
             this.height = labelHeight;
 
             this.add(labels());
-
-            Font titleFont = new Font("Comic Sans", Font.PLAIN, 35);
-
-            JLabel title = new JLabel("COUNTER", SwingConstants.CENTER);
-            title.setBounds(0, 0, width, (int)(this.labelHeight/12));
-            title.setFont(titleFont);
-            title.setBackground(Color.RED);
-            title.setForeground(Color.BLACK);
-            title.setVisible(true);
-
-            this.add(title);
-
-            // TODO make title work
 
             this.setOpaque(true);
             this.setVisible(true);
@@ -508,6 +680,17 @@ class FunctionalPanel extends JPanel {
          */
         private JLabel labels() {
             JLabel mainLabel = new JLabel();
+
+            Font titleFont = new Font("Comic Sans", Font.PLAIN, 35);
+
+            JLabel title = new JLabel("COUNTER", SwingConstants.CENTER);
+            title.setBounds(0, 10, width, (int)(this.labelHeight/12));
+            title.setFont(titleFont);
+            title.setBackground(Color.RED);
+            title.setForeground(Color.BLACK);
+            title.setVisible(true);
+
+            mainLabel.add(title);
 
             int width = this.width;
             int height = this.height;
@@ -522,7 +705,7 @@ class FunctionalPanel extends JPanel {
             final int[] DATA = this.numData;
 
             for ( int i = 0; i < DATA.length; i++ ) {
-                final int YCORDINATE = HEIGHTPART*(i+1);
+                final int YCORDINATE = HEIGHTPART*(i+1)+15;
                 final String s = comments[i] + DATA[i];
 
                 int fontSize = 20;
