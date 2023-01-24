@@ -10,7 +10,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -155,6 +154,7 @@ public class Game extends JLabel {
      */
     public void addNumber(int row, int column, int number) {
         this.usersBoard[row][column] = number;
+//        System.out.println("repaint called "+ Arrays.deepToString(this.usersBoard));
         this.repaint();
     }
 
@@ -373,7 +373,7 @@ class NumberListener implements MouseListener {
         for ( int i = 1; i <= 9; i++ ) {
             JButton currButton = new JButton(String.valueOf(i));
             final int num = i;
-            currButton.addActionListener(e1 -> {
+            currButton.addActionListener(event -> {
                 // check if the chosen button's number is possible on that place in board
                 if ( this.sudokuBoard.canAddNumber(yGrid, xGrid, num) ) {
                     this.sudokuBoard.addNumber(yGrid, xGrid, num);
@@ -408,9 +408,11 @@ class FunctionalPanel extends JPanel {
     private final JFrame frame;
     private final Game game;
     private SideCounter sideCounter;
+    private boolean able;
     public FunctionalPanel(Game game) {
         this.frame = game.getFrame();
         this.game = game;
+        this.able = true;
         this.setLayout(null);
 
         int frameWidth = frame.getWidth();
@@ -430,6 +432,9 @@ class FunctionalPanel extends JPanel {
 
         BotLabel botLabel = new BotLabel(this);
         this.add(botLabel);
+
+        BackToMainMenu backToMainMenu = new BackToMainMenu(this);
+        this.add(backToMainMenu);
 
         this.setOpaque(false);
         this.setVisible(true);
@@ -458,6 +463,22 @@ class FunctionalPanel extends JPanel {
      * counter numbers
      */
     public void updateSideCounter() { this.sideCounter.updateNumDataLabel(); }
+
+    /**
+     * method to set able of the panel
+     * if its true it all works correctly (default)
+     * when changed to false, (for example after bot solution),
+     * it makes some functions (mouse listeners mostly) unreachable,
+     * because they aren't needed (I am ready after bot...)
+     * @param nAble - the boolean of availability, false paralized some functions
+     */
+    public void setAble(boolean nAble) { this.able = nAble; }
+
+    /**
+     * getter for the able boolean
+     * @return boolean functionalPanel. able
+     */
+    public boolean getAble() { return this.able; }
 
     /**
      * label that will be a button for the user to click,
@@ -516,6 +537,14 @@ class FunctionalPanel extends JPanel {
              */
             @Override
             public void mouseClicked(MouseEvent e) {
+                int[][] currBoard = this.game.getCurrBoard();
+                boolean able = this.panel.getAble();
+
+                if ( !able || Calculator.isFullyDone(currBoard) ) {
+                    Play.message("Bot cannot perform the operations right now.");
+                    return;
+                }
+
                 int areYouSure = JOptionPane.showOptionDialog(new JFrame(),
                         "Do you want the bot to solve the game for you?",
                         "Are you sure?",
@@ -530,7 +559,6 @@ class FunctionalPanel extends JPanel {
                 }
                 System.out.println("Running the bot");
 
-                int[][] currBoard = this.game.getCurrBoard();
                 int[][] goalBoard = null;
 
                 try {
@@ -566,14 +594,10 @@ class FunctionalPanel extends JPanel {
                     int tmp = goalBoard[y][x];
                     this.sudokuBoard.addNumber(y, x, tmp);
 
-                    try {
-                        TimeUnit.SECONDS.sleep(1);
-                    } catch (InterruptedException exception) {
-                        throw new RuntimeException(exception);
-                    }
-
                     x++;
                 }
+
+                this.panel.setAble(false);
             }
             @Override
             public void mousePressed(MouseEvent e) {}
@@ -598,7 +622,8 @@ class FunctionalPanel extends JPanel {
             myTimer.setRepeats(true);
             myTimer.start();
 
-            this.setOpaque(false);
+            this.setOpaque(true);
+            this.setBackground(Color.WHITE);
             this.setText("00:00");
             this.setForeground(Color.BLACK);
             this.setHorizontalAlignment(CENTER);
@@ -781,8 +806,7 @@ class FunctionalPanel extends JPanel {
 
             this.setBackground(Color.BLUE);
 
-            Game currGame = panel.getGame();
-            IAmDoneListener myListener = new IAmDoneListener(currGame);
+            IAmDoneListener myListener = new IAmDoneListener(panel);
             this.addMouseListener(myListener);
 
             this.setOpaque(true);
@@ -797,9 +821,19 @@ class FunctionalPanel extends JPanel {
      */
     static class IAmDoneListener implements MouseListener {
         private final Game game;
-        public IAmDoneListener(Game game) { this.game = game; }
+        private final FunctionalPanel panel;
+        public IAmDoneListener(FunctionalPanel panel) {
+            this.panel = panel;
+            this.game = this.panel.getGame();
+        }
         @Override
         public void mouseClicked(MouseEvent e) {
+            boolean able = this.panel.getAble();
+            if ( !able ) {
+                Play.message("You can't perform this operation right now");
+                return;
+            }
+
             int[][] currBoard = game.getCurrBoard();
 
             boolean isDone = Calculator.isFullyDone(currBoard);
@@ -826,5 +860,56 @@ class FunctionalPanel extends JPanel {
         public void mouseEntered(MouseEvent e) {}
         @Override
         public void mouseExited(MouseEvent e) {}
+    }
+
+    static class BackToMainMenu extends JLabel {
+        BackToMainMenu(FunctionalPanel panel) {
+            int width = panel.getWidth();
+            int height = panel.getHeight();
+
+            this.setBounds(0,0, (int)(width*0.1), (int)(height*0.1));
+            this.setText("Back to Menu");
+            this.setVerticalAlignment(CENTER);
+            this.setHorizontalAlignment(CENTER);
+            this.setBackground(Color.WHITE);
+            this.setOpaque(false);
+
+            Font myFont = new Font("Comic Sans", Font.PLAIN, 20);
+            this.setFont(myFont);
+
+            BackToMainMenuListener backToMainMenuListener = new BackToMainMenuListener(panel);
+            this.addMouseListener(backToMainMenuListener);
+
+            this.setVisible(true);
+        }
+
+        /**
+         * class that will contain a listener
+         * that will react on clicking 'back to main menu'
+         */
+        static class BackToMainMenuListener implements MouseListener {
+            private final FunctionalPanel panel;
+            private final Game game;
+            public BackToMainMenuListener(FunctionalPanel panel) {
+                this.panel = panel;
+                this.game = this.panel.getGame();
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JFrame mainFrame = this.game.getFrame();
+                mainFrame.dispose();
+
+                new Menu();
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {}
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        }
     }
 }

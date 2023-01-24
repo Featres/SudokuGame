@@ -185,7 +185,6 @@ public class Calculator {
 
     /**
      * Exception used to throw when the board is impossible to solve
-     * @params:
      * reason: reason of throwing an error
      */
     private static class UnsolvableBoardException extends RuntimeException {
