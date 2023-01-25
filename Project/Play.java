@@ -157,7 +157,12 @@ class ClickListener implements MouseListener {
         int userChoice = Play.difficultyAsker();
 //        System.out.println("WoW"); for the testing
         this.label.setVisible(false);
-        Game newGame = new Game(this.frame, userChoice);
+        Game newGame = null;
+        try {
+            newGame = new Game(this.frame, userChoice);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         this.frame.add(newGame);
     }
     @Override

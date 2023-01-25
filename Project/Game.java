@@ -1,5 +1,7 @@
 package Project;
 
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,6 +11,7 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -45,9 +48,10 @@ public class Game extends JLabel {
     int userChoice;
     // main frame of the game
     JFrame frame;
-    private SudokuBoard sudokuBoard;
-    private FunctionalPanel functionalPanel;
-    Game(JFrame frame, int userChoice) {
+    private final SudokuBoard sudokuBoard;
+    private final FunctionalPanel functionalPanel;
+    Game(JFrame frame, int userChoice)
+            throws UnsupportedAudioFileException, IOException, LineUnavailableException {
 
         boardSize = (int)(Play.screenWidth/3);
         System.out.println(boardSize);
@@ -78,6 +82,9 @@ public class Game extends JLabel {
         FunctionalPanel functionalPanel = new FunctionalPanel(this);
         this.add(functionalPanel);
         this.functionalPanel = functionalPanel;
+
+        MusicPlayer musicPlayer = new MusicPlayer(this);
+        this.add(musicPlayer);
 
         this.frame.add(this);
     }
@@ -179,18 +186,10 @@ public class Game extends JLabel {
     public void setCurrBoard(int[][] nCurrBoard) { this.usersBoard = nCurrBoard; }
 
     /**
-     * getter for the jframe frame
+     * getter for the JFrame frame
      * @return - frame of the game
      */
     public JFrame getFrame() { return this.frame; }
-
-    /**
-     *  a method that can access Games visibility
-     * @param newVisible - boolean that games visibility is set to
-     */
-    public void setVisibility(boolean newVisible) {
-        this.setVisible(newVisible);
-    }
 
     /**
      * getter for the sudoku board
@@ -384,12 +383,6 @@ class SudokuBoard extends JPanel {
     }
 
     /**
-     * getter for the starting board
-     * @return starting board
-     */
-    public int[][] getStartingBoard() { return this.startingBoard; }
-
-    /**
      * setter for the colliding points data in sudokuboard
      * @param nCollidingPoints - the new value that the colliding points will be replaced with
      */
@@ -407,12 +400,6 @@ class SudokuBoard extends JPanel {
     public void updateCollidingPoints(int[][] board, int num, int row, int column) {
         this.collidingPoints = Calculator.findCollidingPoints(board, num, row, column);
     }
-
-    /**
-     * getter for the colliding points variable in the sudokuboard object
-     * @return - colliding points variable int[][] data type
-     */
-    public int[][] getCollidingPoints() { return this.collidingPoints; }
 
     /**
      * getter for the current, used Game object
@@ -492,7 +479,7 @@ class NumberListener implements MouseListener {
 class FunctionalPanel extends JPanel {
     private final JFrame frame;
     private final Game game;
-    private SideCounter sideCounter;
+    private final SideCounter sideCounter;
     private boolean able;
     public FunctionalPanel(Game game) {
         this.frame = game.getFrame();
@@ -571,10 +558,7 @@ class FunctionalPanel extends JPanel {
      * to finish his work
      */
     static class BotLabel extends JLabel {
-        private final FunctionalPanel panel;
         BotLabel(FunctionalPanel nPanel) {
-            this.panel = nPanel;
-
             this.setBackground(Color.CYAN);
             this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 5));
             this.setText("Help me! Let the bot finish");
@@ -585,11 +569,11 @@ class FunctionalPanel extends JPanel {
             Font myFont = new Font("Comic Sans", Font.PLAIN, 25);
             this.setFont(myFont);
 
-            int panelWidth = panel.getWidth();
-            int panelHeight = panel.getHeight();
+            int panelWidth = nPanel.getWidth();
+            int panelHeight = nPanel.getHeight();
             this.setBounds((int)(panelWidth*0.1), (int)(panelHeight*0.75), (int)(panelWidth*0.2), (int)(panelHeight*0.07));
 
-            BotSolvingMouseListener botSolvingMouseListener = new BotSolvingMouseListener(this.panel);
+            BotSolvingMouseListener botSolvingMouseListener = new BotSolvingMouseListener(nPanel);
             this.addMouseListener(botSolvingMouseListener);
 
             this.setVisible(true);
