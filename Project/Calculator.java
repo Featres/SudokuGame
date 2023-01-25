@@ -1,5 +1,6 @@
 package Project;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Calculator {
@@ -181,6 +182,56 @@ public class Calculator {
             }
         }
         return true;
+    }
+
+    /**
+     * function that will return why the number cannot be
+     * inputted on a certain grid cell by returning an array
+     * of positions that collide with the given action
+     * @param board - sudoku board that the user works on
+     * @param num - number that the user wants to input on the position
+     * @param row - row that the user wants to input to
+     * @param column - column that the user wants to input to
+     * @return - array of positions that are colliding
+     */
+    public static int[][] findCollidingPoints(int[][] board, int num, int row, int column) {
+        ArrayList<String> collidingList = new ArrayList<String>();
+        for ( int i = 0; i < 9; i++ ) {
+            if ( board[row][i] == num ) {
+                String data = String.valueOf(row) + String.valueOf(i);
+                collidingList.add(data);
+            }
+            if ( board[i][column] == num ) {
+                String data = String.valueOf(i) + String.valueOf(column);
+                collidingList.add(data);
+            }
+        }
+
+        int rowStart = (int) (row/3);
+        int colStart = (int) (column/3);
+        for ( int i = 0; i < 3; i++ ) {
+            for ( int j = 0; j < 3; j++ ) {
+                if ( board[rowStart+i][colStart+j] == num ) {
+                    String data = String.valueOf(rowStart+i) + String.valueOf(colStart+j);
+                    collidingList.add(data);
+                }
+            }
+        }
+
+        for ( int i = 0; i < collidingList.size(); i++ ) {
+            for ( int j = i+1; j < collidingList.size(); j++ ) {
+                if ( collidingList.get(i).equals(collidingList.get(j)) ) {
+                    collidingList.remove(i);
+                }
+            }
+        }
+
+        int[][] result = new int[collidingList.size()][2];
+        for ( int i = 0; i < result.length; i++ ) {
+            result[i][0] = Integer.parseInt(collidingList.get(i).substring(1, 2));
+            result[i][1] = Integer.parseInt(collidingList.get(i).substring(0, 1));
+        }
+        return result;
     }
 
     /**

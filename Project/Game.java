@@ -6,11 +6,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+// TODO instructions
+// TODO music
+// TODO hint
+// TODO game finish
+// TODO delete dashes from the documentation
 
 /**
  * class where user plays the game
@@ -205,6 +211,7 @@ public class Game extends JLabel {
 class SudokuBoard extends JPanel {
     private final int[][] startingBoard;
     private final Game boardLabel;
+    private int[][] collidingPoints;
     SudokuBoard(int[][] nStartingBoard, Game label) {
         this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setBackground(Color.WHITE);
@@ -331,6 +338,49 @@ class SudokuBoard extends JPanel {
             g2.draw(lineA);
             g2.draw(lineB);
         }
+
+        int[][] collidingPos = this.collidingPoints;
+
+        if ( collidingPos != null ) {
+            g2.setColor(Color.RED);
+            System.out.println(Arrays.deepToString(collidingPos));
+            for ( int[] pos : collidingPos ) {
+                int circleX = pos[0]*SIZE;
+                int circleY = pos[1]*SIZE;
+
+                Ellipse2D circle = new Ellipse2D.Double(circleX, circleY, SIZE, SIZE);
+
+                g2.draw(circle);
+            }
+            int delay = 2000;
+            CircleTimerActionListener circleTimerAL = new CircleTimerActionListener(this);
+
+            Timer circleTimer = new Timer(delay, circleTimerAL);
+            circleTimer.setRepeats(false);
+            circleTimer.start();
+        }
+
+        g2.setColor(Color.BLACK);
+        this.setCollidingPoints(null);
+    }
+
+    /**
+     * class that will be used to 'hide' the circles after a reasonable time,
+     * so they don't stay there forever
+     */
+    static class CircleTimerActionListener implements ActionListener{
+        private final SudokuBoard sudokuBoard;
+        public CircleTimerActionListener(SudokuBoard sudokuBoard) {
+            this.sudokuBoard = sudokuBoard;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            SudokuBoard sudokuboard = this.sudokuBoard;
+            sudokuboard.setCollidingPoints(null);
+
+            Game myGame = sudokuboard.getGame();
+            myGame.repaint();
+        }
     }
 
     /**
@@ -338,6 +388,37 @@ class SudokuBoard extends JPanel {
      * @return starting board
      */
     public int[][] getStartingBoard() { return this.startingBoard; }
+
+    /**
+     * setter for the colliding points data in sudokuboard
+     * @param nCollidingPoints - the new value that the colliding points will be replaced with
+     */
+    public void setCollidingPoints(int[][] nCollidingPoints) { this.collidingPoints = nCollidingPoints; }
+
+    /**
+     * method that will be called every time that something
+     * collides, it will run a searching algorithm and update the
+     * colliding points variable
+     * @param board - the sudoku board that the user is working on
+     * @param num - number that the user tried to input
+     * @param row - row that the user tried to input the number to
+     * @param column - column that the user tried to input the number to
+     */
+    public void updateCollidingPoints(int[][] board, int num, int row, int column) {
+        this.collidingPoints = Calculator.findCollidingPoints(board, num, row, column);
+    }
+
+    /**
+     * getter for the colliding points variable in the sudokuboard object
+     * @return - colliding points variable int[][] data type
+     */
+    public int[][] getCollidingPoints() { return this.collidingPoints; }
+
+    /**
+     * getter for the current, used Game object
+     * @return currents game Game data type object
+     */
+    public Game getGame() { return this.boardLabel; }
 }
 
 // listener used on board to add numbers
@@ -380,7 +461,11 @@ class NumberListener implements MouseListener {
                     askFrame.dispose();
                 } else {
                     Play.message("You cannot use that number here");
-                    //TODO maybe some animation of colliding number
+
+                    int[][] board = this.game.getCurrBoard();
+                    this.sudokuBoard.updateCollidingPoints(board, num, yGrid, xGrid);
+                    this.game.repaint();
+
                     askFrame.dispose();
                 }
             });
@@ -576,7 +661,6 @@ class FunctionalPanel extends JPanel {
 
                 int x = 0;
                 int y = 0;
-                // TODO make this work!!!
                 while ( true ) {
                     this.game.setCurrBoard(currBoard);
                     if ( x == 9 ) {
@@ -839,7 +923,6 @@ class FunctionalPanel extends JPanel {
             boolean isDone = Calculator.isFullyDone(currBoard);
             boolean isDoneAndComplete = Calculator.isDoneAndComplete(currBoard);
 
-            // TODO game finish (better)
             if ( !isDone ) Play.message("You didn't finish Your board yet! Good luck!");
             else if ( isDoneAndComplete ) {
                 System.out.println("Game ended");
