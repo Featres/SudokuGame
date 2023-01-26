@@ -1,6 +1,5 @@
 package Project;
 
-import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
@@ -17,9 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 // TODO instructions
-// TODO hint
 // TODO game finish
-// TODO game icon
 // TODO delete dashes from the documentation
 
 /**
@@ -219,6 +216,7 @@ class SudokuBoard extends JPanel {
     private final int[][] startingBoard;
     private final Game boardLabel;
     private int[][] collidingPoints;
+    private final NumberListener numberListener;
     SudokuBoard(int[][] nStartingBoard, Game label) {
         this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setBackground(Color.WHITE);
@@ -228,6 +226,7 @@ class SudokuBoard extends JPanel {
 
         NumberListener nl = new NumberListener(this, this.boardLabel);
         this.addMouseListener(nl);
+        this.numberListener = nl;
 
         this.startingBoard = nStartingBoard;
     }
@@ -414,15 +413,25 @@ class SudokuBoard extends JPanel {
      * @return currents game Game data type object
      */
     public Game getGame() { return this.boardLabel; }
+
+    /**
+     * getter for the current, used NumberListener object
+     * @return this.numberListener of type NumberListener
+     */
+    public NumberListener getNumberListener() { return this.numberListener; }
 }
 
 // listener used on board to add numbers
 class NumberListener implements MouseListener {
     private final SudokuBoard sudokuBoard;
     private final Game game;
+    private boolean gettingAHint;
+    private boolean brushMode;
     NumberListener(SudokuBoard sudokuBoard, Game game) {
         this.sudokuBoard = sudokuBoard;
         this.game = game;
+        this.gettingAHint = false;
+        this.brushMode = false;
     }
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -433,7 +442,50 @@ class NumberListener implements MouseListener {
         int xGrid = (int) ((9*xCLick)/Game.boardSize);
         int yGrid = (int) ((9*yClick)/Game.boardSize);
 
+        if ( gettingAHint ) {
+            setGettingAHint(false);
+
+            int[][] currBoard = this.game.getCurrBoard();
+            if ( currBoard[yGrid][xGrid] != 0 ) {
+                Play.message("You already have that grid figured out");
+                return;
+            }
+
+            int[][] currBoardCopy = new int[9][9];
+            for ( int i = 0; i < 9; i++ ) {
+                for ( int j = 0; j < 9; j++ ) {
+                    currBoardCopy[i][j] = currBoard[i][j];
+                }
+            }
+            int[][] solutionBoard = null;
+            try {
+                solutionBoard = Calculator.calculateSudoku(currBoardCopy);
+            } catch(Exception ex) {
+                Play.message("Your current sudoku board is impossible to solve, you made some errors ;(");
+                return;
+            }
+
+            int correctValue = solutionBoard[yGrid][xGrid];
+            this.sudokuBoard.addNumber(yGrid, xGrid, correctValue);
+
+            return;
+        }
+
         int[][] startingPositions = this.game.startingPositions;
+
+        if ( this.brushMode ) {
+            for ( int[] position : startingPositions ) {
+                if ( yGrid == position[0] && xGrid == position[1] ) {
+                    Play.message("This is a starting cell - you can't brush it");
+                    return;
+                }
+            }
+
+            this.sudokuBoard.addNumber(yGrid, xGrid, 0);
+
+            return;
+        }
+
 //        System.out.println("checking starting pos "+Arrays.deepToString(startingPositions));
         for ( int[] position : startingPositions ) {
             if ( yGrid == position[0] && xGrid == position[1] ) {
@@ -479,6 +531,18 @@ class NumberListener implements MouseListener {
     public void mouseEntered(MouseEvent e) {}
     @Override
     public void mouseExited(MouseEvent e) {}
+
+    /**
+     * method to change the value of the variable getting a hint
+     * @param nBoolean the new value of getting a hint
+     */
+    public void setGettingAHint(boolean nBoolean) { this.gettingAHint = nBoolean; }
+
+    /**
+     * method to change the value of the variable brush mode
+     * @param nBoolean the new value of brush mode
+     */
+    public void setBrushMode(boolean nBoolean) { this.brushMode = nBoolean; }
 }
 
 /**
@@ -515,6 +579,12 @@ class FunctionalPanel extends JPanel {
 
         BackToMainMenu backToMainMenu = new BackToMainMenu(this);
         this.add(backToMainMenu);
+
+        HintLabel hintLabel = new HintLabel(this);
+        this.add(hintLabel);
+
+        BrushLabel brushLabel = new BrushLabel(this);
+        this.add(brushLabel);
 
         this.setOpaque(false);
         this.setVisible(true);
@@ -963,11 +1033,9 @@ class FunctionalPanel extends JPanel {
          * that will react on clicking 'back to main menu'
          */
         static class BackToMainMenuListener implements MouseListener {
-            private final FunctionalPanel panel;
             private final Game game;
             public BackToMainMenuListener(FunctionalPanel panel) {
-                this.panel = panel;
-                this.game = this.panel.getGame();
+                this.game = panel.getGame();
             }
 
             @Override
@@ -983,6 +1051,159 @@ class FunctionalPanel extends JPanel {
                 }
 
                 new Menu();
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {}
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        }
+    }
+
+    /**
+     * class that will be a label that will be
+     * a hint for the user
+     * - he will ask for a hint
+     * - if he accepts
+     * - he will click on a certain box
+     */
+    static class HintLabel extends JLabel {
+        public HintLabel(FunctionalPanel panel) {
+            int width = panel.getWidth();
+            int height = panel.getHeight();
+
+            this.setBounds((int)(width*0.2), (int)(height*0.65), (int)(width*0.1), (int)(height*0.07));
+            this.setBackground(Color.ORANGE);
+            this.setOpaque(true);
+            this.setText("Get a HINT");
+
+            Font myFont = new Font("Comic Sans", Font.PLAIN, 25);
+            this.setFont(myFont);
+
+            this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 5));
+            this.setHorizontalAlignment(CENTER);
+            this.setVerticalAlignment(CENTER);
+
+            HintMouseListener hintMouseListener = new HintMouseListener(panel);
+            this.addMouseListener(hintMouseListener);
+
+            this.setVisible(true);
+        }
+
+        /**
+         * class that will react on the clicking of the hint label
+         * more detailed information in the label's documentation
+         */
+        static class HintMouseListener implements MouseListener {
+            private final FunctionalPanel functionalPanel;
+            public HintMouseListener(FunctionalPanel panel) {
+                this.functionalPanel = panel;
+            }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int choice = JOptionPane.showConfirmDialog(new JFrame(), "Are you sure to get a hint?",
+                        "Question to get Hint", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                        null);
+                if ( choice == 1 ) return;
+
+                SudokuBoard sudokuBoard = this.functionalPanel.getGame().getSudokuBoard();
+                NumberListener numberListener = sudokuBoard.getNumberListener();
+                numberListener.setGettingAHint(true);
+
+                Play.message("Click on the grid cell you want to get hint on");
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {}
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        }
+    }
+
+    /**
+     * label that will allow the user to brush off the
+     * numbers that he wrote and doesn't want them anymore
+     * - click on the label and accept it
+     * - go into brush mode
+     * - click on numbers to delete them (apart from starting positions)
+     * - click on the label again to exit brush mode
+     */
+    static class BrushLabel extends JLabel {
+        private boolean brushMode;
+        private final NumberListener numberListener;
+        public BrushLabel(FunctionalPanel panel) {
+            this.brushMode = false;
+
+            SudokuBoard sudokuBoard = panel.getGame().getSudokuBoard();
+            this.numberListener = sudokuBoard.getNumberListener();
+
+            BrushMouseListener brushML = new BrushMouseListener(this);
+            this.addMouseListener(brushML);
+
+            int width = panel.getWidth();
+            int height = panel.getHeight();
+
+            this.setBounds((int)(width*0.1), (int)(height*0.65), (int)(width*0.1), (int)(height*0.07));
+            this.setBackground(Color.YELLOW);
+            this.setOpaque(true);
+            this.setText("Brush Mode");
+            this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 5));
+
+
+            Font myFont = new Font("Comic Sans", Font.PLAIN, 25);
+            this.setFont(myFont);
+            this.setHorizontalAlignment(CENTER);
+            this.setVerticalAlignment(CENTER);
+
+            this.setVisible(true);
+        }
+
+        /**
+         * method used to access and change the value of brush mode
+         * will change BrushLabel.brushMode & NumberListener.brushMode
+         * @param nBoolean the new value for the brushMode
+         */
+        public void setBrushMode(boolean nBoolean) {
+            this.brushMode = nBoolean;
+            this.numberListener.setBrushMode(nBoolean);
+            if ( nBoolean ) this.setText("Brush Mode ON");
+            else this.setText("Brush Mode");
+        }
+
+        /**
+         * getter for the brush mode, a boolean value, which
+         * determines whether the user is in brush mode
+         * @return this.brushMode of type boolean
+         */
+        public boolean getBrushMode() { return this.brushMode; }
+
+        static class BrushMouseListener implements MouseListener {
+            private final BrushLabel brushLabel;
+            public BrushMouseListener(BrushLabel brushLabel) {
+                this.brushLabel = brushLabel;
+            }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if ( this.brushLabel.getBrushMode() ) {
+                    this.brushLabel.setBrushMode(false);
+                    return;
+                }
+                int choice = JOptionPane.showConfirmDialog(new JFrame(), "Do you want to turn on Brush Mode?",
+                            "Turning on Brush Mode", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                            null);
+                if ( choice == 1 ) return;
+
+                Play.message("You are now in Brush Mode. You can click on the grid cells and remove" +
+                        " inputted values. To leave Brush Mode click on the Brush Mode button again." +
+                        " Note: you can't remove numbers from the starting grid!");
+
+                this.brushLabel.setBrushMode(true);
             }
             @Override
             public void mousePressed(MouseEvent e) {}

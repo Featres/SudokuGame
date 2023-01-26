@@ -30,10 +30,23 @@ public class Play {
         new Menu();
     }
 
+    /**
+     * method that is useful to inform the user about something
+     * a JOptionPane window pops up with the given message
+     * @param message message that we will be shown the user
+     */
     public static void message(String message) {
         JOptionPane.showMessageDialog(new JFrame(), message);
     }
 
+    /**
+     * method used when creating the sudoku board to determine
+     * the difficulty of the board
+     * @return a integer value:
+     *      0 - easy,
+     *      1 - medium,
+     *      2 - hard
+     */
     public static int difficultyAsker() {
         return JOptionPane.showOptionDialog(new JFrame(), "Choose difficulty:", "Set up Your Sudoku", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[] {"Easy (~45 cells)", "Medium (~35 cells)", "Hard (~25 cells)"}, 1);
     }
@@ -60,6 +73,11 @@ class Menu extends JFrame {
         }
 
         this.add(new MenuLabel(this));
+
+        String logoPath = "Images/Logo/Logo.png";
+        ImageIcon logo1 = new ImageIcon(logoPath);
+        Image logo = logo1.getImage();
+        this.setIconImage(logo);
 
         this.setVisible(true);
     }
