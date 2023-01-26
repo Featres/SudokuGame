@@ -17,6 +17,8 @@ import java.util.Arrays;
 
 // TODO instructions
 // TODO game finish
+// TODO comments
+// TODO green bars when completing a row/column/square
 // TODO delete dashes from the documentation
 
 /**
@@ -84,6 +86,16 @@ public class Game extends JLabel {
         MusicPlayer musicPlayer = new MusicPlayer(this);
         this.add(musicPlayer);
         this.musicPlayer = musicPlayer;
+
+        JLabel musicPlayerTitle = new JLabel("Music Player", SwingConstants.CENTER);
+        Font myFont = new Font("Comic Sans", Font.BOLD, 30);
+        musicPlayerTitle.setFont(myFont);
+        int width = this.getWidth();
+        int height = this.getHeight();
+        musicPlayerTitle.setBounds((int)(width*0.425), (int)(height*0.77), (int)(width*0.15), (int)(height*0.03));
+        musicPlayerTitle.setOpaque(false);
+        musicPlayerTitle.setVisible(true);
+        this.add(musicPlayerTitle);
 
         this.frame.add(this);
     }
@@ -552,6 +564,7 @@ class FunctionalPanel extends JPanel {
     private final JFrame frame;
     private final Game game;
     private final SideCounter sideCounter;
+    private final TimerLabel timerLabel;
     private boolean able;
     public FunctionalPanel(Game game) {
         this.frame = game.getFrame();
@@ -573,6 +586,7 @@ class FunctionalPanel extends JPanel {
 
         TimerLabel timerLabel = new TimerLabel(this);
         this.add(timerLabel);
+        this.timerLabel = timerLabel;
 
         BotLabel botLabel = new BotLabel(this);
         this.add(botLabel);
@@ -629,6 +643,12 @@ class FunctionalPanel extends JPanel {
      * @return boolean functionalPanel. able
      */
     public boolean getAble() { return this.able; }
+
+    /**
+     * method used for easier access of the method stop timer
+     * in TimerLabel that stops the timer when the game ends
+     */
+    public void stopTimerTimerLabel() { this.timerLabel.stopTimer(); }
 
     /**
      * label that will be a button for the user to click,
@@ -760,6 +780,7 @@ class FunctionalPanel extends JPanel {
      * label that will show how much time it took the user
      */
     static class TimerLabel extends JLabel {
+        private final Timer timer;
         public TimerLabel(FunctionalPanel panel) {
             TimerActionListener timerActionListener = new TimerActionListener(this);
 
@@ -767,6 +788,8 @@ class FunctionalPanel extends JPanel {
             Timer myTimer = new Timer(delay, timerActionListener);
             myTimer.setRepeats(true);
             myTimer.start();
+
+            this.timer = myTimer;
 
             this.setOpaque(true);
             this.setBackground(Color.WHITE);
@@ -785,6 +808,13 @@ class FunctionalPanel extends JPanel {
             this.setFont(myFont);
 
             this.setVisible(true);
+        }
+
+        /**
+         * method used to stop the timer when the game ends
+         */
+        public void stopTimer() {
+            this.timer.stop();
         }
 
         /**
@@ -988,6 +1018,7 @@ class FunctionalPanel extends JPanel {
             if ( !isDone ) Play.message("You didn't finish Your board yet! Good luck!");
             else if ( isDoneAndComplete ) {
                 System.out.println("Game ended");
+                this.panel.stopTimerTimerLabel();
                 Play.message("Congrats! You won the game!!!");
 
                 JFrame currFrame = this.game.getFrame();
@@ -1047,7 +1078,7 @@ class FunctionalPanel extends JPanel {
                 try {
                     currMusicPlayer.changeClipState("pause");
                 } catch (LineUnavailableException | IOException ex) {
-                    throw new RuntimeException(ex);
+                    ex.printStackTrace();
                 }
 
                 new Menu();
