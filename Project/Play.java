@@ -54,7 +54,7 @@ class Menu extends JFrame {
 
         try {
             // C:\Users\piort\OneDrive\Documents\GitHub\SudokuGame\Project\Images\MenuBackground.png
-            this.setContentPane(new JLabel(new ImageIcon(ImageIO.read(new File("Images/MenuBackground.png")))));
+            this.setContentPane(new JLabel(new ImageIcon(ImageIO.read(new File("Images/BackGround/MenuBackground.png")))));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -130,7 +130,6 @@ class PlayLabel extends JLabel {
  * in menu there will be instructions for the game displayed. to be implemented
  */
 class InstructionLabel extends JLabel {
-    //TODO write instructions ;)))
     InstructionLabel() {
         this.setBounds((int)(Play.screenWidth*5/8), (int)(Play.screenHeight/8), (int)(Play.screenWidth*5/16), (int)(Play.screenHeight/4));
         this.setText("Instructions");
@@ -155,7 +154,7 @@ class ClickListener implements MouseListener {
     @Override
     public void mouseClicked(MouseEvent e) {
         int userChoice = Play.difficultyAsker();
-//        System.out.println("WoW"); for the testing
+
         this.label.setVisible(false);
         Game newGame = null;
         try {

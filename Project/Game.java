@@ -1,5 +1,6 @@
 package Project;
 
+import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
@@ -16,9 +17,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 // TODO instructions
-// TODO music
 // TODO hint
 // TODO game finish
+// TODO game icon
 // TODO delete dashes from the documentation
 
 /**
@@ -50,11 +51,11 @@ public class Game extends JLabel {
     JFrame frame;
     private final SudokuBoard sudokuBoard;
     private final FunctionalPanel functionalPanel;
+    private final MusicPlayer musicPlayer;
     Game(JFrame frame, int userChoice)
             throws UnsupportedAudioFileException, IOException, LineUnavailableException {
 
         boardSize = (int)(Play.screenWidth/3);
-        System.out.println(boardSize);
         boardX = (int)(Play.screenWidth/3);
         boardY = (int)(Play.screenHeight/6);
 
@@ -85,6 +86,7 @@ public class Game extends JLabel {
 
         MusicPlayer musicPlayer = new MusicPlayer(this);
         this.add(musicPlayer);
+        this.musicPlayer = musicPlayer;
 
         this.frame.add(this);
     }
@@ -202,6 +204,12 @@ public class Game extends JLabel {
      * @return - current, used functional panel object
      */
     public FunctionalPanel getFunctionalPanel() { return this.functionalPanel; }
+
+    /**
+     * getter fot the music player object
+     * @return this.musicPlayer of type MusicPlayer
+     */
+    public MusicPlayer getMusicPlayer() { return  this.musicPlayer; }
 }
 
 /**
@@ -966,6 +974,13 @@ class FunctionalPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 JFrame mainFrame = this.game.getFrame();
                 mainFrame.dispose();
+
+                MusicPlayer currMusicPlayer = this.game.getMusicPlayer();
+                try {
+                    currMusicPlayer.changeClipState("pause");
+                } catch (LineUnavailableException | IOException ex) {
+                    throw new RuntimeException(ex);
+                }
 
                 new Menu();
             }
