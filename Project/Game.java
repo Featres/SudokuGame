@@ -289,6 +289,9 @@ class SudokuBoard extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g;
 
+        g2.setStroke(new BasicStroke(10));
+        g2.draw(new Flare2D(100, 100, 500, 500));
+
         final int SIZE = Game.boardSize/9;
         final int STARTX = 0;
         final int STARTY = 0;
