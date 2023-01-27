@@ -149,13 +149,61 @@ class PlayLabel extends JLabel {
  */
 class InstructionLabel extends JLabel {
     InstructionLabel() {
-        this.setBounds((int)(Play.screenWidth*5/8), (int)(Play.screenHeight/8), (int)(Play.screenWidth*5/16), (int)(Play.screenHeight/4));
+        this.setBounds((int)(Play.screenWidth*0.55), (int)(Play.screenHeight*0.125), (int)(Play.screenWidth*0.3125), (int)(Play.screenHeight*0.45));
         this.setText("Instructions");
         this.setFont(new Font("SansSerif", Font.BOLD, 35));
         this.setHorizontalAlignment(SwingConstants.CENTER);
         this.setVerticalAlignment(SwingConstants.TOP);
         this.setBackground(Color.WHITE);
+        this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 3));
+
+        InstructionText instructionText = new InstructionText(this);
+        this.add(instructionText);
+
         this.setOpaque(true);
+        this.setVisible(true);
+    }
+
+    /**
+     * class that will be responsible for all the text
+     * in the instruction label
+     */
+    static class InstructionText extends JLabel {
+        public InstructionText(InstructionLabel instructionLabel) {
+            int width = instructionLabel.getWidth();
+            int height = instructionLabel.getHeight();
+
+            Font myFont = new Font("SansSerif", Font.PLAIN, 20);
+            this.setFont(myFont);
+
+            this.setBounds(0, (int)(height*0.1),
+                    width, (int)(height*0.8));
+            this.setVerticalAlignment(CENTER);
+            this.setHorizontalAlignment(CENTER);
+
+            String[] lines = { "\n                                            by Piotr Marciniak",
+                                "This is a simple program to allow the user to play a game of ",
+                                "sudoku. I will not explain the rules since, they are general ",
+                                " knowledge. You have got a timer that measures Your time. You ",
+                                "also have a Counter, that gives you information about the amount ",
+                                "of different digits on the board. You can always use a brush, ",
+                                "when you click on it and confirm that You want to use it, You ",
+                                "can erase any inputted number just by clicking on it (only the ",
+                                "numbers, that you added, not from the starting puzzle). You also ",
+                                "have a hint, if You take it, You can click on any empty cell and ",
+                                "the correct number will be added. On top of that You can use bot, ",
+                                "which will automatically finish Your current problem. ",
+                                "Please note: You can run into a wrong way of solving, and then ",
+                                "Your board doesn't have a solution. Then the Hint and the Bot ",
+                                "won't work. "};
+            String text = "<html>";
+            for ( String line : lines ) text += "  " + line + "<br>";
+            text += "</html>";
+            this.setText(text);
+
+            this.setOpaque(false);
+            this.setVisible(true);
+        }
     }
 }
 

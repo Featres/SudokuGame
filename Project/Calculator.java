@@ -235,6 +235,48 @@ public class Calculator {
     }
 
     /**
+     * method to check if the given row in the board is complete
+     * @param board the sudoku board
+     * @param row row to be checked
+     */
+    public static boolean checkRow(int[][] board, int row) {
+        for ( int num : board[row] ) {
+            if ( num == 0 ) return false;
+        }
+        return true;
+    }
+
+    /**
+     * method to check if the given column in the board is complete
+     * @param board the sudoku board
+     * @param column column to be checked
+     */
+    public static boolean checkColumn(int[][] board, int column) {
+        for ( int i = 0; i < 9; i++ ) {
+            if ( board[i][column] == 0 ) return false;
+        }
+        return true;
+    }
+
+    /**
+     * method to check if the square that contains given
+     * cell in the board is complete
+     * @param board the sudoku board
+     * @param row row parameter of the cell, which square will be checked
+     * @param column column  parameter of the cell, which square will be checked
+     */
+    public static boolean checkSquare(int[][] board, int row, int column) {
+        int startRow = 3*((int)(row/3));
+        int startColumn = 3*((int)(column/3));
+        for ( int i = 0; i < 3; i++ ) {
+            for ( int j = 0; j < 3; j++ ) {
+                if ( board[startRow+i][startColumn+j] == 0 ) return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Exception used to throw when the board is impossible to solve
      * reason: reason of throwing an error
      */
