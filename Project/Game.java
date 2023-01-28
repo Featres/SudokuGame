@@ -75,9 +75,7 @@ public class Game extends JLabel {
         this.setVisible(true);
 
         CorrectFlare correctFlare = new CorrectFlare(this);
-        this.add(correctFlare);
         this.correctFlare = correctFlare;
-
 
         SudokuBoard sudokuBoard = new SudokuBoard(this.startingBoard, this);
         this.add(sudokuBoard);
@@ -224,6 +222,12 @@ public class Game extends JLabel {
      * @return this.musicPlayer of type MusicPlayer
      */
     public MusicPlayer getMusicPlayer() { return  this.musicPlayer; }
+
+    /**
+     * getter for the correct flare object
+     * @return this.correctFlare of type CorrectFlare
+     */
+    public CorrectFlare getCorrectFlare() { return this.correctFlare; }
 }
 
 /**
@@ -234,6 +238,7 @@ class SudokuBoard extends JPanel {
     private final Game boardLabel;
     private int[][] collidingPoints;
     private final NumberListener numberListener;
+    private final CorrectFlare correctFlare;
     SudokuBoard(int[][] nStartingBoard, Game label) {
         this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setBackground(Color.WHITE);
@@ -244,6 +249,9 @@ class SudokuBoard extends JPanel {
         NumberListener nl = new NumberListener(this, this.boardLabel);
         this.addMouseListener(nl);
         this.numberListener = nl;
+
+        this.correctFlare = this.boardLabel.getCorrectFlare();
+        this.add(this.correctFlare);
 
         this.startingBoard = nStartingBoard;
     }
@@ -286,11 +294,9 @@ class SudokuBoard extends JPanel {
      */
     @Override
     public void paint(Graphics g) {
-
+        System.out.println(" repaint ");
+        this.correctFlare.repaint();
         Graphics2D g2 = (Graphics2D) g;
-
-        g2.setStroke(new BasicStroke(10));
-        g2.draw(new Flare2D(100, 100, 500, 500));
 
         final int SIZE = Game.boardSize/9;
         final int STARTX = 0;
@@ -530,6 +536,7 @@ class NumberListener implements MouseListener {
                     Play.message("You cannot use that number here");
 
                     int[][] board = this.game.getCurrBoard();
+                    // TODO those numbers are often wrong (too many collisions shown)
                     this.sudokuBoard.updateCollidingPoints(board, num, yGrid, xGrid);
                     this.game.repaint();
 
