@@ -72,10 +72,10 @@ public class Game extends JLabel {
         this.usersBoard = this.startingBoard.clone();
 
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
-        this.setVisible(true);
 
         CorrectFlare correctFlare = new CorrectFlare(this);
         this.correctFlare = correctFlare;
+        this.add(this.correctFlare);
 
         SudokuBoard sudokuBoard = new SudokuBoard(this.startingBoard, this);
         this.add(sudokuBoard);
@@ -99,6 +99,7 @@ public class Game extends JLabel {
         musicPlayerTitle.setVisible(true);
         this.add(musicPlayerTitle);
 
+        this.setVisible(true);
         this.frame.add(this);
     }
 
@@ -130,7 +131,7 @@ public class Game extends JLabel {
     /**
      * method to set starting positions of numbers, so that they are uneditable
      * @param board - starting board for the game
-     * @return - poisitons that are uneditable
+     * @return - positions that are uneditable
      */
     public int[][] setUpStartingPositions(int[][] board) {
         int count = 0;
@@ -155,7 +156,7 @@ public class Game extends JLabel {
     }
 
     /**
-     * method to change users choice in Joptionpane to a actual difficulty
+     * method to change users choice in JOptionPane to an actual difficulty
      * @param userChoice - users choice in JOptionPane difficulty window
      * @return - double of percentage of shown digits
      */
@@ -181,7 +182,7 @@ public class Game extends JLabel {
     public void addNumber(int row, int column, int number) {
         this.usersBoard[row][column] = number;
         this.correctFlare.updateCorrectFlare(row, column);
-//        System.out.println("repaint called "+ Arrays.deepToString(this.usersBoard));
+
         this.repaint();
     }
 
@@ -238,7 +239,6 @@ class SudokuBoard extends JPanel {
     private final Game boardLabel;
     private int[][] collidingPoints;
     private final NumberListener numberListener;
-    private final CorrectFlare correctFlare;
     SudokuBoard(int[][] nStartingBoard, Game label) {
         this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setBackground(Color.WHITE);
@@ -249,9 +249,6 @@ class SudokuBoard extends JPanel {
         NumberListener nl = new NumberListener(this, this.boardLabel);
         this.addMouseListener(nl);
         this.numberListener = nl;
-
-        this.correctFlare = this.boardLabel.getCorrectFlare();
-        this.add(this.correctFlare);
 
         this.startingBoard = nStartingBoard;
     }
@@ -294,9 +291,8 @@ class SudokuBoard extends JPanel {
      */
     @Override
     public void paint(Graphics g) {
-        System.out.println(" repaint ");
-        this.correctFlare.repaint();
         Graphics2D g2 = (Graphics2D) g;
+        System.out.println(" here ");
 
         final int SIZE = Game.boardSize/9;
         final int STARTX = 0;

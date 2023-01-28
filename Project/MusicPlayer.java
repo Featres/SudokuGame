@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import javax.sound.sampled.*;
 
+// TODO music fucked up
+
 /**
  * music player
  * panel with three labels that using mouse listeners can control music

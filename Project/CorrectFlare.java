@@ -23,7 +23,7 @@ public class CorrectFlare extends JPanel {
         this.game = game;
         this.toDoList = new ArrayList<Flare2D>();
 
-        this.setBounds(0,0,0,0);
+        this.setBounds(0,0,Game.boardSize,Game.boardSize);
 //        this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setOpaque(false);
 
@@ -39,7 +39,6 @@ public class CorrectFlare extends JPanel {
         int[][] currBoard = this.game.getCurrBoard();
         int gridSize = (int)(Game.boardSize/9);
 
-        // TODO this!
         if ( Calculator.checkRow(currBoard, row) ) {
             int x = row*gridSize + gridSize/2;
             int y1 = gridSize/2;
@@ -77,16 +76,25 @@ public class CorrectFlare extends JPanel {
      */
     @Override
     public void paint(Graphics g) {
-        // TODO this isnt executed
+        System.out.println(" Executed ");
         Graphics2D g2 = (Graphics2D) g;
 
         for ( Flare2D flare : this.toDoList ) {
             flare.draw(g2);
-            System.out.println(flare);
         }
-        System.out.println(" aa");
+        System.out.println(this.toDoList+" aa");
 
-        this.toDoList.clear();
+        // TODO it should clear immediately - has to output smaller and smaller one
+//        this.toDoList.clear();
+    }
+
+    /**
+     * method to be called whenever you need to remove given flare
+     * from the toDoList of the correctFlare object variable
+     * @param flare flare object to be removed
+     */
+    public void removeFlare(Flare2D flare) {
+        this.toDoList.remove(flare);
     }
 }
 
@@ -101,6 +109,9 @@ class Flare2D extends Line2D.Double {
     private int y1;
     private  int x2;
     private int y2;
+
+    private int diffX = -1;
+    private int diffY = -1;
 
     public Flare2D(CorrectFlare correctFlare, int x1, int y1, int x2, int y2) {
         super(new Point2D.Double(x1, y1), new Point2D.Double(x2, y2));
@@ -138,6 +149,8 @@ class Flare2D extends Line2D.Double {
         Point2D second = new Point2D.Double(x2, y2);
 
         Line2D copy = new Line2D.Double(first, second);
+
+        g2.setStroke(new BasicStroke(10));
         g2.draw(copy);
     }
 
@@ -166,11 +179,11 @@ class Flare2D extends Line2D.Double {
 
         String x1 = String.valueOf(this.x1);
         String y1 = String.valueOf(this.y1);
-        res += "("+x1+", "+y1+" )";
+        res += "("+x1+", "+y1+")";
 
         String x2 = String.valueOf(this.x2);
         String y2 = String.valueOf(this.y2);
-        res += "("+x2+", "+y2+" )";
+        res += "("+x2+", "+y2+")";
 
         return res;
     }
@@ -192,27 +205,32 @@ class Flare2D extends Line2D.Double {
          */
         @Override
         public void actionPerformed(ActionEvent e) {
-            Point2D firstPoint = flare.getP1();
-            Point2D secondPoint = flare.getP2();
+            int x1 = this.flare.x1;
+            int y1 = this.flare.y1;
+            int x2 = this.flare.x2;
+            int y2 = this.flare.y2;
+
+            Point2D firstPoint = new Point2D.Double(x1, y1);
+            Point2D secondPoint = new Point2D.Double(x2, y2);
 
             final int maximum = 100;
             if ( calcDistance(firstPoint, secondPoint) < maximum ) {
                 this.flare.myTimer.stop();
+                CorrectFlare correctFlare = this.flare.getCorrectFlare();
+                correctFlare.removeFlare(this.flare);
                 return;
             }
-
-            int x1 = (int) firstPoint.getX();
-            int y1 = (int) firstPoint.getY();
-            int x2 = (int) secondPoint.getX();
-            int y2 = (int) secondPoint.getY();
 
             int lenX = Math.abs(x1 - x2);
             int lenY = Math.abs(y1 - y2);
 
             final double diff = 0.03;
             int diffX = (int)(lenX* diff);
+            if ( this.flare.diffX == -1 ) this.flare.diffX = diffX;
             int diffY = (int)(lenY* diff);
+            if ( this.flare.diffY == -1 ) this.flare.diffY = diffY;
 
+            System.out.println(" bef " +x1+" " +y1+"  " + x2+ "  " +y2+"  "+diffX+ " " + diffY);
             if ( x1 < x2 ) {
                 x1 += diffX;
                 x2 -= diffX;
@@ -228,6 +246,7 @@ class Flare2D extends Line2D.Double {
                 y1 -= diffY;
                 y2 += diffY;
             }
+            System.out.println(x1+" " +y1+"  " + x2+ "  " +y2);
 
             this.flare.setPoints(x1, y1, x2, y2);
 
