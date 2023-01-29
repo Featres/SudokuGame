@@ -41,7 +41,6 @@ public class CorrectFlare extends JPanel {
         int gridSize = (int)(Game.boardSize/9);
 
         if ( Calculator.checkRow(currBoard, row) ) {
-            System.out.println(" row " + row);
             int x = row*gridSize + gridSize/2;
             int y1 = gridSize/2;
             int y2 = (int)(gridSize*8.5);

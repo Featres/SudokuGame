@@ -92,14 +92,10 @@ class MusicPlayer extends JPanel {
             }
             this.clip.start();
         } else if ( change.equals("pause") ) {
-            this.intentionalStop = true;
             this.clip.stop();
-            this.intentionalStop = false;
         } else if ( change.equals("close") ) {
-            this.intentionalStop = true;
             this.clip.stop();
             this.clip.close();
-            this.intentionalStop = false;
         } else System.out.println(change+" not understood");
     }
 
@@ -108,8 +104,10 @@ class MusicPlayer extends JPanel {
      * and pauses if its playing
      */
     public void playPause() throws LineUnavailableException, IOException {
+        this.intentionalStop = true;
         if ( this.clip.isRunning() ) changeClipState("pause");
         else changeClipState("play");
+        this.intentionalStop = false;
     }
 
     /**
@@ -120,6 +118,7 @@ class MusicPlayer extends JPanel {
      *                   otherwise false
      */
     public void playForward(boolean wasRunning) throws LineUnavailableException, IOException {
+        this.intentionalStop = true;
         this.currentSong++;
         if ( this.currentSong == this.amountSongs ) {
             this.currentSong = 0;
@@ -131,6 +130,7 @@ class MusicPlayer extends JPanel {
         if ( wasRunning ) {
             this.changeClipState("play");
         }
+        this.intentionalStop = false;
     }
 
     /**
@@ -141,6 +141,7 @@ class MusicPlayer extends JPanel {
      *                   otherwise false
      */
     public void playBackward(boolean wasRunning) throws LineUnavailableException, IOException {
+        this.intentionalStop = true;
         this.currentSong--;
         if ( this.currentSong == -1 ) {
             this.currentSong = this.amountSongs - 1;
@@ -152,6 +153,7 @@ class MusicPlayer extends JPanel {
         if ( wasRunning ) {
             changeClipState("play");
         }
+        this.intentionalStop = false;
     }
 
     /**
@@ -200,7 +202,7 @@ class MusicPlayer extends JPanel {
             System.out.println("step1");
             if ( event.getType() != LineEvent.Type.STOP ) return;
             System.out.println("step2");
-            if ( this.musicPlayer.getIntentionalStop() ) return;
+                if ( !this.musicPlayer.getIntentionalStop() ) return;
             System.out.println("step3");
             try {
                 this.musicPlayer.playForward(true);
@@ -265,11 +267,26 @@ class PlayMusicLabel extends JLabel {
      * the other way
      */
     public void changeIcon() {
-        Icon currIcon = this.getIcon();
-        if ( currIcon.equals(this.icons.get(0)) ) {
-            this.setIcon(this.icons.get(1) );
-        } else {
-            this.setIcon(this.icons.get(0));
+        /*
+        if true - checks whether it's running
+        if false - changes to the one not used right now
+         */
+        boolean byRunning = true;
+        System.out.println(this.musicPlayer.clipWasRunning());
+        if ( byRunning ) {
+            if ( this.musicPlayer.clipWasRunning() ) {
+                this.setIcon(this.icons.get(1));
+            } else {
+                this.setIcon(this.icons.get(0));
+            }
+        }
+        else if ( !byRunning ) {
+            Icon currIcon = this.getIcon();
+            if (currIcon.equals(this.icons.get(0))) {
+                this.setIcon(this.icons.get(1));
+            } else {
+                this.setIcon(this.icons.get(0));
+            }
         }
     }
 
@@ -292,12 +309,12 @@ class PlayMusicLabel extends JLabel {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            this.playMusicLabel.changeIcon();
             try {
                 this.musicPlayer.playPause();
             } catch (LineUnavailableException | IOException ex) {
                 ex.printStackTrace();
             }
+            this.playMusicLabel.changeIcon();
         }
         @Override
         public void mousePressed(MouseEvent e) {}
@@ -354,6 +371,7 @@ class ForwardMusicLabel extends JLabel {
         public void mouseClicked(MouseEvent e) {
             try {
                 boolean wasRunning = this.musicPlayer.clipWasRunning();
+                System.out.println("forward " + wasRunning);
                 this.musicPlayer.playForward(wasRunning);
             } catch (LineUnavailableException | IOException ex) {
                 ex.printStackTrace();
