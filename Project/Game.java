@@ -15,9 +15,10 @@ import java.io.IOException;
 import java.util.Arrays;
 
 // TODO game finish
-// TODO comments
-// TODO green bars when completing a row/column/square
+// TODO notes system
 // TODO delete dashes from the documentation
+// TODO music fucked up
+// TODO make it more dependent - fonts etc. depending on screen size
 
 /**
  * class where user plays the game
@@ -58,6 +59,7 @@ public class Game extends JLabel {
         boardY = (int)(Play.screenHeight/6);
 
         this.frame = frame;
+        this.frame.setLayout(null);
 
         this.currBoard = Random.randomSudoku();
         System.out.println(Arrays.deepToString(this.currBoard));
@@ -73,13 +75,13 @@ public class Game extends JLabel {
 
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
 
-        CorrectFlare correctFlare = new CorrectFlare(this);
-        this.correctFlare = correctFlare;
-        this.add(this.correctFlare);
-
         SudokuBoard sudokuBoard = new SudokuBoard(this.startingBoard, this);
         this.add(sudokuBoard);
         this.sudokuBoard = sudokuBoard;
+
+        CorrectFlare correctFlare = new CorrectFlare(this);
+        this.add(correctFlare);
+        this.correctFlare = correctFlare;
 
         FunctionalPanel functionalPanel = new FunctionalPanel(this);
         this.add(functionalPanel);
@@ -292,7 +294,6 @@ class SudokuBoard extends JPanel {
     @Override
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        System.out.println(" here ");
 
         final int SIZE = Game.boardSize/9;
         final int STARTX = 0;

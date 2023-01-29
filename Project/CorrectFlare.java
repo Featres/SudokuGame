@@ -23,8 +23,8 @@ public class CorrectFlare extends JPanel {
         this.game = game;
         this.toDoList = new ArrayList<Flare2D>();
 
-        this.setBounds(0,0,Game.boardSize,Game.boardSize);
-//        this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
+//        this.setBounds(0,0,Game.boardSize,Game.boardSize);
+        this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setOpaque(false);
 
         this.setVisible(true);
@@ -37,33 +37,38 @@ public class CorrectFlare extends JPanel {
      */
     public void updateCorrectFlare(int row, int column) {
         int[][] currBoard = this.game.getCurrBoard();
+
         int gridSize = (int)(Game.boardSize/9);
 
         if ( Calculator.checkRow(currBoard, row) ) {
+            System.out.println(" row " + row);
             int x = row*gridSize + gridSize/2;
             int y1 = gridSize/2;
-            int y2 = (int) (gridSize*8.5);
-            Flare2D myFlare = new Flare2D(this, x, y1, x, y2);
+            int y2 = (int)(gridSize*8.5);
+            Flare2D myFlare = new Flare2D(this, y1, x, y2, x);
             this.toDoList.add(myFlare);
         }
         if ( Calculator.checkColumn(currBoard, column) ) {
             int x1 = gridSize/2;
             int x2 = (int) (gridSize*8.5);
             int y = column*gridSize + gridSize/2;
-            Flare2D myFlare = new Flare2D(this, x1, y, x2, y);
+            Flare2D myFlare = new Flare2D(this, y, x1, y, x2);
             this.toDoList.add(myFlare);
         }
         if ( Calculator.checkSquare(currBoard, row, column) ) {
             int xGrid = 3*((int)(column/3));
             int yGrid = 3*((int)(row/3));
 
-            int x1 = xGrid*gridSize + gridSize/2;
-            int y1 = yGrid*gridSize + gridSize/2;
-            int x2 = xGrid*gridSize + 3*gridSize + gridSize/2;
-            int y2 = yGrid*gridSize + 3*gridSize + gridSize/2;
+            int x1 = xGrid*gridSize;
+            int y1 = yGrid*gridSize;
+            int x2 = xGrid*gridSize + 3*gridSize;
+            int y2 = yGrid*gridSize + 3*gridSize;
 
-            Flare2D myFlare = new Flare2D(this, x1, y1, x2, y2);
-            this.toDoList.add(myFlare);
+            Flare2D myFlare1 = new Flare2D(this, x1, y1, x2, y2);
+            Flare2D myFlare2 = new Flare2D(this, x1, y2, x2, y1);
+
+            this.toDoList.add(myFlare1);
+            this.toDoList.add(myFlare2);
         }
 
         this.repaint();
@@ -76,16 +81,11 @@ public class CorrectFlare extends JPanel {
      */
     @Override
     public void paint(Graphics g) {
-        System.out.println(" Executed ");
         Graphics2D g2 = (Graphics2D) g;
 
         for ( Flare2D flare : this.toDoList ) {
             flare.draw(g2);
         }
-        System.out.println(this.toDoList+" aa");
-
-        // TODO it should clear immediately - has to output smaller and smaller one
-//        this.toDoList.clear();
     }
 
     /**
@@ -95,6 +95,7 @@ public class CorrectFlare extends JPanel {
      */
     public void removeFlare(Flare2D flare) {
         this.toDoList.remove(flare);
+        this.repaint();
     }
 }
 
@@ -112,6 +113,7 @@ class Flare2D extends Line2D.Double {
 
     private int diffX = -1;
     private int diffY = -1;
+    private final int delay = 5;
 
     public Flare2D(CorrectFlare correctFlare, int x1, int y1, int x2, int y2) {
         super(new Point2D.Double(x1, y1), new Point2D.Double(x2, y2));
@@ -122,7 +124,7 @@ class Flare2D extends Line2D.Double {
         this.x2 = x2;
         this.y2 = y2;
 
-        int delay = 10;
+        int delay = this.delay;
         TimerActionListener timerAL = new TimerActionListener(this);
         this.myTimer = new Timer(delay, timerAL);
         myTimer.setRepeats(true);
@@ -150,8 +152,10 @@ class Flare2D extends Line2D.Double {
 
         Line2D copy = new Line2D.Double(first, second);
 
+        g2.setColor(Color.GREEN);
         g2.setStroke(new BasicStroke(10));
         g2.draw(copy);
+        g2.setColor(Color.BLACK);
     }
 
     /**
@@ -171,7 +175,7 @@ class Flare2D extends Line2D.Double {
 
     /**
      * override of toString for better debugging
-     * @return a easier to read debug
+     * @return an easier to read debug
      */
     @Override
     public String toString() {
@@ -213,7 +217,7 @@ class Flare2D extends Line2D.Double {
             Point2D firstPoint = new Point2D.Double(x1, y1);
             Point2D secondPoint = new Point2D.Double(x2, y2);
 
-            final int maximum = 100;
+            final int maximum = 10;
             if ( calcDistance(firstPoint, secondPoint) < maximum ) {
                 this.flare.myTimer.stop();
                 CorrectFlare correctFlare = this.flare.getCorrectFlare();
@@ -224,13 +228,16 @@ class Flare2D extends Line2D.Double {
             int lenX = Math.abs(x1 - x2);
             int lenY = Math.abs(y1 - y2);
 
-            final double diff = 0.03;
-            int diffX = (int)(lenX* diff);
-            if ( this.flare.diffX == -1 ) this.flare.diffX = diffX;
-            int diffY = (int)(lenY* diff);
-            if ( this.flare.diffY == -1 ) this.flare.diffY = diffY;
+            final double diff = 0.002;
 
-            System.out.println(" bef " +x1+" " +y1+"  " + x2+ "  " +y2+"  "+diffX+ " " + diffY);
+            int diffX = Math.max((int)(lenX * diff), 1);
+            if ( this.flare.diffX == -1 ) this.flare.diffX = diffX;
+            else diffX = this.flare.diffX;
+
+            int diffY = Math.max((int)(lenY* diff), 1);
+            if ( this.flare.diffY == -1 ) this.flare.diffY = diffY;
+            else diffY = this.flare.diffY;
+
             if ( x1 < x2 ) {
                 x1 += diffX;
                 x2 -= diffX;
@@ -246,7 +253,6 @@ class Flare2D extends Line2D.Double {
                 y1 -= diffY;
                 y2 += diffY;
             }
-            System.out.println(x1+" " +y1+"  " + x2+ "  " +y2);
 
             this.flare.setPoints(x1, y1, x2, y2);
 
