@@ -23,7 +23,6 @@ class MusicPlayer extends JPanel {
     private final Clip clip;
     private int currentSong;
     private final int amountSongs = 5;
-    private boolean intentionalStop = false;
     MusicPlayer(Game game)
             throws UnsupportedAudioFileException, IOException, LineUnavailableException {
 
@@ -42,8 +41,6 @@ class MusicPlayer extends JPanel {
         this.audioStreams = generateAudioStreams(this.musicFiles);
 
         this.clip = AudioSystem.getClip();
-        ClipLineListener clipLineListener = new ClipLineListener(this);
-        this.clip.addLineListener(clipLineListener);
 
         this.currentSong = (int)(this.amountSongs*Math.random());
 
@@ -104,10 +101,8 @@ class MusicPlayer extends JPanel {
      * and pauses if its playing
      */
     public void playPause() throws LineUnavailableException, IOException {
-        this.intentionalStop = true;
         if ( this.clip.isRunning() ) changeClipState("pause");
         else changeClipState("play");
-        this.intentionalStop = false;
     }
 
     /**
@@ -118,7 +113,6 @@ class MusicPlayer extends JPanel {
      *                   otherwise false
      */
     public void playForward(boolean wasRunning) throws LineUnavailableException, IOException {
-        this.intentionalStop = true;
         this.currentSong++;
         if ( this.currentSong == this.amountSongs ) {
             this.currentSong = 0;
@@ -130,7 +124,6 @@ class MusicPlayer extends JPanel {
         if ( wasRunning ) {
             this.changeClipState("play");
         }
-        this.intentionalStop = false;
     }
 
     /**
@@ -141,19 +134,17 @@ class MusicPlayer extends JPanel {
      *                   otherwise false
      */
     public void playBackward(boolean wasRunning) throws LineUnavailableException, IOException {
-        this.intentionalStop = true;
         this.currentSong--;
         if ( this.currentSong == -1 ) {
             this.currentSong = this.amountSongs - 1;
         }
 
-        changeClipState("close");
+        this.changeClipState("close");
         this.clip.open(this.audioStreams.get(this.currentSong));
 
         if ( wasRunning ) {
-            changeClipState("play");
+            this.changeClipState("play");
         }
-        this.intentionalStop = false;
     }
 
     /**
@@ -182,35 +173,6 @@ class MusicPlayer extends JPanel {
      */
     public boolean clipWasRunning() { return this.clip.isRunning(); }
 
-    /**
-     * getter for the intentional stop variable
-     * @return this.intentionalStop of type boolean
-     */
-    public boolean getIntentionalStop() { return this.intentionalStop; }
-
-    /**
-     * listener used to play next song by the clip
-     * when the next one finishes
-     */
-    static class ClipLineListener implements LineListener {
-        private final MusicPlayer musicPlayer;
-        ClipLineListener(MusicPlayer musicPlayer) {
-            this.musicPlayer = musicPlayer;
-        }
-        @Override
-        public void update(LineEvent event) {
-            System.out.println("step1");
-            if ( event.getType() != LineEvent.Type.STOP ) return;
-            System.out.println("step2");
-                if ( !this.musicPlayer.getIntentionalStop() ) return;
-            System.out.println("step3");
-            try {
-                this.musicPlayer.playForward(true);
-            } catch (LineUnavailableException | IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
 
 /**
@@ -272,7 +234,7 @@ class PlayMusicLabel extends JLabel {
         if false - changes to the one not used right now
          */
         boolean byRunning = true;
-        System.out.println(this.musicPlayer.clipWasRunning());
+        System.out.println("was running: "+this.musicPlayer.clipWasRunning());
         if ( byRunning ) {
             if ( this.musicPlayer.clipWasRunning() ) {
                 this.setIcon(this.icons.get(1));
@@ -350,10 +312,10 @@ class ForwardMusicLabel extends JLabel {
 
         int iconWidth = this.getHeight();
         int iconHeight = this.getHeight();
-        Image tmpForawrd1 = tmpForward.getScaledInstance(iconWidth,
+        Image tmpForward1 = tmpForward.getScaledInstance(iconWidth,
                 iconHeight, Image.SCALE_SMOOTH);
 
-        Icon forwardIcon = new ImageIcon(tmpForawrd1);
+        Icon forwardIcon = new ImageIcon(tmpForward1);
 
         this.setIcon(forwardIcon);
         this.setHorizontalAlignment(SwingConstants.CENTER);
@@ -432,6 +394,7 @@ class BackwardMusicLabel extends JLabel {
         public void mouseClicked(MouseEvent e) {
             try {
                 boolean wasRunning = this.musicPlayer.clipWasRunning();
+                System.out.println("backward: "+wasRunning);
                 this.musicPlayer.playBackward(wasRunning);
             } catch (LineUnavailableException | IOException ex) {
                 ex.printStackTrace();

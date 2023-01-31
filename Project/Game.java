@@ -51,6 +51,7 @@ public class Game extends JLabel {
     private final FunctionalPanel functionalPanel;
     private final MusicPlayer musicPlayer;
     private final CorrectFlare correctFlare;
+    private final Comments comments;
     Game(JFrame frame, int userChoice)
             throws UnsupportedAudioFileException, IOException, LineUnavailableException {
 
@@ -90,6 +91,10 @@ public class Game extends JLabel {
         MusicPlayer musicPlayer = new MusicPlayer(this);
         this.add(musicPlayer);
         this.musicPlayer = musicPlayer;
+
+        Comments comments = new Comments(this);
+        this.add(comments);
+        this.comments = comments;
 
         JLabel musicPlayerTitle = new JLabel("Music Player", SwingConstants.CENTER);
         Font myFont = new Font("Comic Sans", Font.BOLD, 30);
@@ -244,7 +249,7 @@ class SudokuBoard extends JPanel {
     SudokuBoard(int[][] nStartingBoard, Game label) {
         this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setBackground(Color.WHITE);
-        this.setOpaque(true); // for the testing
+        this.setOpaque(true);
 
         this.boardLabel = label;
 
