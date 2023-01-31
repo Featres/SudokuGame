@@ -32,6 +32,8 @@ public class Comments extends JLabel {
 
         this.setBounds(boardX, boardY, boardSize, boardSize);
         this.setOpaque(false);
+
+        // TODO clear with brush
     }
 
     @Override

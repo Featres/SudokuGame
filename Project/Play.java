@@ -82,13 +82,6 @@ class Menu extends JFrame {
         this.setVisible(true);
     }
 
-    /**
-     * a method that can access Menus visibility
-     * @param newVisible - boolean that menus visibility is set to
-     */
-    public void setVisiblility(boolean newVisible) {
-        this.setVisible(newVisible);
-    }
 }
 
 /**
@@ -101,7 +94,9 @@ class MenuLabel extends JLabel {
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
         this.add(new TitleLabel());
         this.add(new PlayLabel(this, this.frame));
-        this.add(new InstructionLabel());
+
+        boolean showInstructions = false;
+        if ( showInstructions ) this.add(new InstructionLabel());
     }
 }
 

@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.Arrays;
 
 // TODO game finish
-// TODO notes system
 // TODO delete dashes from the documentation
 // TODO music fucked up
 // TODO make it more dependent - fonts etc. depending on screen size
@@ -90,7 +89,7 @@ public class Game extends JLabel {
         this.correctFlare = correctFlare;
 
         FunctionalPanel functionalPanel = new FunctionalPanel(this);
-        this.add(functionalPanel);
+        this.add(functionalPanel, 0);
         this.functionalPanel = functionalPanel;
 
         MusicPlayer musicPlayer = new MusicPlayer(this);

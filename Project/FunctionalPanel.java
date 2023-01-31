@@ -18,6 +18,7 @@ class FunctionalPanel extends JPanel {
     private final Game game;
     private final SideCounter sideCounter;
     private final TimerLabel timerLabel;
+    private final HelpLabel.InfoLabel infoLabel;
     private boolean able;
     public FunctionalPanel(Game game) {
         this.frame = game.getFrame();
@@ -55,6 +56,13 @@ class FunctionalPanel extends JPanel {
 
         CommentsLabel commentsLabel = new CommentsLabel(this);
         this.add(commentsLabel);
+
+        HelpLabel.InfoLabel infoLabel = new HelpLabel.InfoLabel();
+        this.add(infoLabel, 0);
+        this.infoLabel = infoLabel;
+
+        HelpLabel helpLabel = new HelpLabel(this);
+        this.add(helpLabel);
 
         this.setOpaque(false);
         this.setVisible(true);
@@ -101,6 +109,12 @@ class FunctionalPanel extends JPanel {
     public boolean getAble() { return this.able; }
 
     /**
+     * getter for the infoLabel object
+     * @return this.infoLabel of class HelpLabel.InfoLabel
+     */
+    public HelpLabel.InfoLabel getInfoLabel() { return this.infoLabel; }
+
+    /**
      * method used for easier access of the method stop timer
      * in TimerLabel that stops the timer when the game ends
      */
@@ -112,7 +126,7 @@ class FunctionalPanel extends JPanel {
      * to finish his work
      */
     static class BotLabel extends JLabel {
-        BotLabel(FunctionalPanel nPanel) {
+        public BotLabel(FunctionalPanel nPanel) {
             this.setBackground(Color.CYAN);
             this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 5));
             this.setText("Help me! Let the bot finish");
@@ -531,7 +545,6 @@ class FunctionalPanel extends JPanel {
                                 "will lose all current progress.",
                         "Back to main menu", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                         null);
-                System.out.println("choice "+choice);
 
                 if ( choice == 0 ) {
                     JFrame mainFrame = this.game.getFrame();
@@ -760,6 +773,8 @@ class FunctionalPanel extends JPanel {
             }
             @Override
             public void mouseClicked(MouseEvent e) {
+                if ( !commentsLabel.panel.getAble() ) return;
+
                 if ( this.comments.getCommentsMode() ) {
                     this.comments.setCommentsMode(false);
                     this.commentsLabel.setText("Comments Mode");
@@ -777,6 +792,118 @@ class FunctionalPanel extends JPanel {
             public void mouseEntered(MouseEvent e) {}
             @Override
             public void mouseExited(MouseEvent e) {}
+        }
+    }
+
+    /**
+     * label that will display a bit of help information for the user
+     * about the game and the functionality
+     */
+    static class HelpLabel extends JLabel {
+        private final InfoLabel helpInfo;
+        public HelpLabel(FunctionalPanel panel) {
+            helpInfo = panel.getInfoLabel();
+
+            int width = panel.getWidth();
+            int height = panel.getHeight();
+
+            Font myFont = new Font("Comic Sans", Font.PLAIN, 44);
+            this.setFont(myFont);
+            this.setHorizontalAlignment(SwingConstants.CENTER);
+            this.setVerticalAlignment(SwingConstants.CENTER);
+            this.setForeground(Color.WHITE);
+            this.setText("HELP");
+
+            this.setBackground(Color.BLACK);
+            this.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 5));
+            this.setBounds((int)(width*0.75), (int)(height*0.65), (int)(width*0.15), (int)(height*0.1));
+
+            HelpListener helpListener = new HelpListener(this);
+            this.addMouseListener(helpListener);
+
+            this.setOpaque(true);
+            this.setVisible(true);
+        }
+
+        /**
+         * method to set the parameter show, which determines if the
+         * help info is displayed
+         * @param nBoolean the new value of show
+         */
+        public void setShow(boolean nBoolean) { this.helpInfo.setShow(nBoolean); }
+
+        static class HelpListener implements MouseListener {
+            private final HelpLabel helpLabel;
+            public HelpListener(HelpLabel helpLabel) {
+                this.helpLabel = helpLabel;
+            }
+            @Override
+            public void mouseClicked(MouseEvent e) {}
+            @Override
+            public void mousePressed(MouseEvent e) {}
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+            @Override
+            public void mouseEntered(MouseEvent e) { this.helpLabel.setShow(true); }
+            @Override
+            public void mouseExited(MouseEvent e) { this.helpLabel.setShow(false); }
+        }
+
+        /**
+         * a label that will display some text regarding instructions
+         */
+        static class InfoLabel extends JPanel {
+            public InfoLabel() {
+
+                this.setBounds(Play.screenWidth/4, Play.screenHeight/5,
+                        Play.screenWidth/2, Play.screenHeight/2);
+                this.setBackground(Color.WHITE);
+                this.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 15));
+                this.setOpaque(true);
+
+                int size = this.getWidth() / 45;
+                Font myFont = new Font("Comic Sans", Font.PLAIN, size);
+                String text = " Timer - Timer measures your time in mm:ss.\n" +
+                        " Comments Mode - You can turn on comments mode and then whenever you add a number to a cell" +
+                        " it appears as a note just for you. Note: it has to be a valid option for the given cell.\n" +
+                        " Brush Mode - as soon as You turn on brush mode, you can click on the numbers that You inputted" +
+                        " and just delete them. Note: it doesn't work for the numbers that were the starting position.\n" +
+                        " Hint - whenever you need a bit of help, You can ask a bot for a hint for the chosen cell. Note: " +
+                        "if you already did some mistakes that make the sudoku impossible, the bot won't help you.\n" +
+                        " Bot - whenever you feel like You are done and need help, You can ask a bot to solve the sudoku" +
+                        " for you. Note: if you already did some mistakes that make the sudoku impossible, the bot won't " +
+                        "help you. Note: some functionality is then blocked.\n"+
+                        " Music Player - play/pause to turn the music on or off. Backwards for the previous song and " +
+                        "forward for the next one.\n" +
+                        " I am Done - as soon as You finish, click on that button to finish the game.";
+
+                int rows = (int)(this.getHeight() / (1.25*myFont.getSize()));
+                int columns = this.getWidth() / myFont.getSize();
+                System.out.println(rows+"  "+columns);
+                JTextArea helpInfo = new JTextArea(rows, columns);
+                helpInfo.setLineWrap(true);
+                helpInfo.setWrapStyleWord(true);
+                helpInfo.setText(text);
+                helpInfo.setBounds(0, 0, this.getWidth(), this.getHeight());
+                helpInfo.setOpaque(true);
+                helpInfo.setFont(myFont);
+
+                helpInfo.setVisible(true);
+
+                JScrollPane scrollHelp = new JScrollPane(helpInfo);
+                helpInfo.setEditable(false);
+
+                this.add(scrollHelp);
+                this.setVisible(false);
+
+            }
+
+            /**
+             * method to set the parameter show, which determines if the
+             * help info is displayed
+             * @param nBoolean the new value of show
+             */
+            public void setShow(boolean nBoolean) { this.setVisible(nBoolean); }
         }
     }
 }
