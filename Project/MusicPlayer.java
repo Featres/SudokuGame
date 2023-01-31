@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import javax.sound.sampled.*;
 
-// TODO music fucked up
 
 /**
  * music player

@@ -174,7 +174,6 @@ public class Calculator {
                     }
                 }
                 h = 0;
-//                System.out.println("Square "+Arrays.toString(nums));
                 Arrays.sort(nums);
                 for ( int m = 0; m < 8; m++ ) {
                     if ( nums[m] != 0 && nums[m] == nums[m+1] ) return false;
@@ -198,21 +197,21 @@ public class Calculator {
         ArrayList<String> collidingList = new ArrayList<String>();
         for ( int i = 0; i < 9; i++ ) {
             if ( board[row][i] == num ) {
-                String data = String.valueOf(row) + String.valueOf(i);
+                String data = String.valueOf(row) + i;
                 collidingList.add(data);
             }
             if ( board[i][column] == num ) {
-                String data = String.valueOf(i) + String.valueOf(column);
+                String data = i + String.valueOf(column);
                 collidingList.add(data);
             }
         }
 
-        int rowStart = (int) (row/3);
-        int colStart = (int) (column/3);
+        int rowStart = (row/3);
+        int colStart = (column/3);
         for ( int i = 0; i < 3; i++ ) {
             for ( int j = 0; j < 3; j++ ) {
                 if ( board[rowStart+i][colStart+j] == num ) {
-                    String data = String.valueOf(rowStart+i) + String.valueOf(colStart+j);
+                    String data = String.valueOf(rowStart+i) + (colStart + j);
                     collidingList.add(data);
                 }
             }

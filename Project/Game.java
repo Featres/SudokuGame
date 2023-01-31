@@ -19,6 +19,7 @@ import java.util.Arrays;
 // TODO delete dashes from the documentation
 // TODO music fucked up
 // TODO make it more dependent - fonts etc. depending on screen size
+// TODO help button instead of all the questions
 
 /**
  * class where user plays the game
@@ -76,6 +77,10 @@ public class Game extends JLabel {
 
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
 
+        Comments comments = new Comments(this);
+        this.comments = comments;
+        this.add(comments);
+
         SudokuBoard sudokuBoard = new SudokuBoard(this.startingBoard, this);
         this.add(sudokuBoard);
         this.sudokuBoard = sudokuBoard;
@@ -91,10 +96,6 @@ public class Game extends JLabel {
         MusicPlayer musicPlayer = new MusicPlayer(this);
         this.add(musicPlayer);
         this.musicPlayer = musicPlayer;
-
-        Comments comments = new Comments(this);
-        this.add(comments);
-        this.comments = comments;
 
         JLabel musicPlayerTitle = new JLabel("Music Player", SwingConstants.CENTER);
         Font myFont = new Font("Comic Sans", Font.BOLD, 30);
@@ -226,16 +227,16 @@ public class Game extends JLabel {
     public FunctionalPanel getFunctionalPanel() { return this.functionalPanel; }
 
     /**
-     * getter fot the music player object
+     * getter for the music player object
      * @return this.musicPlayer of type MusicPlayer
      */
     public MusicPlayer getMusicPlayer() { return  this.musicPlayer; }
 
     /**
-     * getter for the correct flare object
-     * @return this.correctFlare of type CorrectFlare
+     * getter for the comments object
+     * @return this.comments of type Comments
      */
-    public CorrectFlare getCorrectFlare() { return this.correctFlare; }
+    public Comments getComments() { return this.comments; }
 }
 
 /**
@@ -245,6 +246,7 @@ class SudokuBoard extends JPanel {
     private final int[][] startingBoard;
     private final Game boardLabel;
     private int[][] collidingPoints;
+    private final Comments comments;
     private final NumberListener numberListener;
     SudokuBoard(int[][] nStartingBoard, Game label) {
         this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
@@ -252,6 +254,7 @@ class SudokuBoard extends JPanel {
         this.setOpaque(true);
 
         this.boardLabel = label;
+        this.comments = label.getComments();
 
         NumberListener nl = new NumberListener(this, this.boardLabel);
         this.addMouseListener(nl);
@@ -267,6 +270,7 @@ class SudokuBoard extends JPanel {
      * @param number - number to add
      */
     public void addNumber(int row, int column, int number) {
+        this.comments.removeComment(number, row, column);
         this.startingBoard[row][column] = number;
         this.boardLabel.addNumber(row, column, number);
 
@@ -449,18 +453,23 @@ class SudokuBoard extends JPanel {
     public NumberListener getNumberListener() { return this.numberListener; }
 }
 
-// listener used on board to add numbers
+/**
+ * listener used on sudokuBoard to add numbers
+ */
 class NumberListener implements MouseListener {
     private final SudokuBoard sudokuBoard;
     private final Game game;
     private boolean gettingAHint;
     private boolean brushMode;
+    private final Comments comments;
     NumberListener(SudokuBoard sudokuBoard, Game game) {
         this.sudokuBoard = sudokuBoard;
         this.game = game;
         this.gettingAHint = false;
         this.brushMode = false;
+        this.comments = this.game.getComments();
     }
+
     @Override
     public void mouseClicked(MouseEvent e) {
         int xCLick = e.getX();
@@ -530,8 +539,15 @@ class NumberListener implements MouseListener {
             JButton currButton = new JButton(String.valueOf(i));
             final int num = i;
             currButton.addActionListener(event -> {
-                // check if the chosen button's number is possible on that place in board
+
+                if ( this.comments.getCommentsMode() ) {
+                    this.comments.addComment(num, yGrid, xGrid);
+                    askFrame.dispose();
+                    return;
+                }
+
                 if ( this.sudokuBoard.canAddNumber(yGrid, xGrid, num) ) {
+                    this.comments.clearComment(yGrid, xGrid);
                     this.sudokuBoard.addNumber(yGrid, xGrid, num);
                     askFrame.dispose();
                 } else {

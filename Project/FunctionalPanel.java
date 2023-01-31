@@ -1,4 +1,4 @@
-package Project;
+    package Project;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
@@ -53,6 +53,9 @@ class FunctionalPanel extends JPanel {
         BrushLabel brushLabel = new BrushLabel(this);
         this.add(brushLabel);
 
+        CommentsLabel commentsLabel = new CommentsLabel(this);
+        this.add(commentsLabel);
+
         this.setOpaque(false);
         this.setVisible(true);
     }
@@ -87,7 +90,7 @@ class FunctionalPanel extends JPanel {
      * when changed to false, (for example after bot solution),
      * it makes some functions (mouse listeners mostly) unreachable,
      * because they aren't needed (I am ready after bot...)
-     * @param nAble - the boolean of availability, false paralized some functions
+     * @param nAble - boolean informing about availability, false paralyzed some functions
      */
     public void setAble(boolean nAble) { this.able = nAble; }
 
@@ -524,17 +527,25 @@ class FunctionalPanel extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                JFrame mainFrame = this.game.getFrame();
-                mainFrame.dispose();
+                int choice = JOptionPane.showConfirmDialog(new JFrame(), "If you return to main menu, you " +
+                                "will lose all current progress.",
+                        "Back to main menu", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+                        null);
+                System.out.println("choice "+choice);
 
-                MusicPlayer currMusicPlayer = this.game.getMusicPlayer();
-                try {
-                    currMusicPlayer.changeClipState("pause");
-                } catch (LineUnavailableException | IOException ex) {
-                    ex.printStackTrace();
+                if ( choice == 0 ) {
+                    JFrame mainFrame = this.game.getFrame();
+                    mainFrame.dispose();
+
+                    MusicPlayer currMusicPlayer = this.game.getMusicPlayer();
+                    try {
+                        currMusicPlayer.changeClipState("pause");
+                    } catch (LineUnavailableException | IOException ex) {
+                        ex.printStackTrace();
+                    }
+
+                    new Menu();
                 }
-
-                new Menu();
             }
             @Override
             public void mousePressed(MouseEvent e) {}
@@ -588,10 +599,13 @@ class FunctionalPanel extends JPanel {
             }
             @Override
             public void mouseClicked(MouseEvent e) {
-                int choice = JOptionPane.showConfirmDialog(new JFrame(), "Are you sure to get a hint?",
-                        "Question to get Hint", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
-                        null);
-                if ( choice == 1 ) return;
+                boolean questionWill = false;
+                if ( questionWill ) {
+                    int choice = JOptionPane.showConfirmDialog(new JFrame(), "Are you sure to get a hint?",
+                            "Question to get Hint", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                            null);
+                    if ( choice == 1 ) return;
+                }
 
                 SudokuBoard sudokuBoard = this.functionalPanel.getGame().getSudokuBoard();
                 NumberListener numberListener = sudokuBoard.getNumberListener();
@@ -678,16 +692,82 @@ class FunctionalPanel extends JPanel {
                     this.brushLabel.setBrushMode(false);
                     return;
                 }
-                int choice = JOptionPane.showConfirmDialog(new JFrame(), "Do you want to turn on Brush Mode?",
-                        "Turning on Brush Mode", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
-                        null);
-                if ( choice == 1 ) return;
+                boolean questionWill = false;
+                if ( questionWill ) {
+                    int choice = JOptionPane.showConfirmDialog(new JFrame(), "Do you want to turn on Brush Mode?",
+                            "Turning on Brush Mode", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                            null);
+                    if ( choice == 1 ) return;
 
-                Play.message("You are now in Brush Mode. You can click on the grid cells and remove" +
-                        " inputted values. To leave Brush Mode click on the Brush Mode button again." +
-                        " Note: you can't remove numbers from the starting grid!");
+                    Play.message("You are now in Brush Mode. You can click on the grid cells and remove" +
+                            " inputted values. To leave Brush Mode click on the Brush Mode button again." +
+                            " Note: you can't remove numbers from the starting grid!");
+                }
 
                 this.brushLabel.setBrushMode(true);
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {}
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        }
+    }
+
+    static class CommentsLabel extends JLabel {
+        private final FunctionalPanel panel;
+        private final Comments comments;
+        public CommentsLabel(FunctionalPanel panel) {
+            this.panel = panel;
+            Game game = this.panel.getGame();
+            this.comments = game.getComments();
+
+            this.setBackground(Color.RED);
+            this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 5));
+            this.setText("Comments Mode");
+            this.setHorizontalAlignment(CENTER);
+            this.setVerticalAlignment(CENTER);
+            this.setOpaque(true);
+
+            Font myFont = new Font("Comic Sans", Font.PLAIN, 25);
+            this.setFont(myFont);
+
+            int panelWidth = this.panel.getWidth();
+            int panelHeight = this.panel.getHeight();
+            this.setBounds((int)(panelWidth*0.1), (int)(panelHeight*0.55), (int)(panelWidth*0.2), (int)(panelHeight*0.07));
+
+            CommentsMouseListener commentsMouseListener = new CommentsMouseListener(this);
+            this.addMouseListener(commentsMouseListener);
+
+            this.setVisible(true);
+        }
+
+        /**
+         * getter for the comments object
+         * @return this.comments of type Comments
+         */
+        public Comments getComments() { return this.comments; }
+
+        static class CommentsMouseListener implements MouseListener {
+            private final CommentsLabel commentsLabel;
+            private final Comments comments;
+            public CommentsMouseListener(CommentsLabel commentsLabel) {
+                this.commentsLabel = commentsLabel;
+                this.comments = commentsLabel.getComments();
+            }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if ( this.comments.getCommentsMode() ) {
+                    this.comments.setCommentsMode(false);
+                    this.commentsLabel.setText("Comments Mode");
+                    return;
+                }
+
+                this.commentsLabel.setText("Comments Mode ON");
+                this.comments.setCommentsMode(true);
             }
             @Override
             public void mousePressed(MouseEvent e) {}
