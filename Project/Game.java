@@ -372,7 +372,7 @@ class SudokuBoard extends JPanel {
 
         if ( collidingPos != null ) {
             g2.setColor(Color.RED);
-            System.out.println(Arrays.deepToString(collidingPos));
+//             System.out.println(Arrays.deepToString(collidingPos));
             for ( int[] pos : collidingPos ) {
                 int circleX = pos[0]*SIZE;
                 int circleY = pos[1]*SIZE;
