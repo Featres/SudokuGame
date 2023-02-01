@@ -68,7 +68,6 @@ class Menu extends JFrame {
         this.setLayout(null);
 
         try {
-            // C:\Users\piort\OneDrive\Documents\GitHub\SudokuGame\Project\Images\MenuBackground.png
             this.setContentPane(new JLabel(new ImageIcon(ImageIO.read(new File("Images/BackGround/MenuBackground.png")))));
         } catch (Exception e) {
             e.printStackTrace();
