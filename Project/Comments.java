@@ -32,8 +32,6 @@ public class Comments extends JLabel {
 
         this.setBounds(boardX, boardY, boardSize, boardSize);
         this.setOpaque(false);
-
-        // TODO clear with brush
     }
 
     @Override
@@ -81,6 +79,13 @@ public class Comments extends JLabel {
 
     }
 
+    /**
+     * method used to remove some comments that become useless when a new
+     * number is added, the useless comments are deleted
+     * @param number number that was added
+     * @param row row that the number was added to
+     * @param column column that the number was added to
+     */
     public void removeComment(int number, int row, int column) {
         for ( int i = 0; i < 9; i++ ) {
             // row

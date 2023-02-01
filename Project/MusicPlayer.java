@@ -16,32 +16,31 @@ import javax.sound.sampled.*;
  * reads some .wav music files
  */
 class MusicPlayer extends JPanel {
-    private final Game game;
-    private final ArrayList<File> musicFiles;
     private final ArrayList<AudioInputStream> audioStreams;
-    private final Clip clip;
+    private final Clip[] clips;
+    private Clip clip;
     private int currentSong;
     private final int amountSongs = 5;
     MusicPlayer(Game game)
             throws UnsupportedAudioFileException, IOException, LineUnavailableException {
 
-        this.game = game;
-
-        int width = this.game.getWidth();
-        int height = this.game.getHeight();
+        int width = game.getWidth();
+        int height = game.getHeight();
 
         this.setBounds((int)(width*0.425), (int)(height*0.8),
                         (int)(width*0.15), (int)(height*0.08));
         this.setBackground(Color.LIGHT_GRAY);
 
         String path = "Images/MusicFiles/song";
-        this.musicFiles = generateMusicFiles(path, this.amountSongs);
+        ArrayList<File> musicFiles = generateMusicFiles(path, this.amountSongs);
 
-        this.audioStreams = generateAudioStreams(this.musicFiles);
-
-        this.clip = AudioSystem.getClip();
+        this.audioStreams = generateAudioStreams(musicFiles);
 
         this.currentSong = (int)(this.amountSongs*Math.random());
+
+        this.clips = generateClips();
+        this.clip = clips[this.currentSong];
+
 
         BackwardMusicLabel backwardMusicLabel = new BackwardMusicLabel(this);
         this.add(backwardMusicLabel);
@@ -60,7 +59,7 @@ class MusicPlayer extends JPanel {
      * @return ready arraylist with all the files
      */
     private ArrayList<File> generateMusicFiles(String path, int amountSongs) {
-        ArrayList<File> result = new ArrayList<File>();
+        ArrayList<File> result = new ArrayList<>();
 
         for ( int i = 1; i <= amountSongs; i++ ) {
             String myPath = path + "";
@@ -84,7 +83,7 @@ class MusicPlayer extends JPanel {
     public void changeClipState(String change) throws LineUnavailableException, IOException {
         if ( change.equals("play") ) {
             if ( !this.clip.isOpen() ) {
-                this.clip.open(audioStreams.get(currentSong));
+                this.clip.open(this.audioStreams.get(this.currentSong));
             }
             this.clip.start();
         } else if ( change.equals("pause") ) {
@@ -92,7 +91,7 @@ class MusicPlayer extends JPanel {
         } else if ( change.equals("close") ) {
             this.clip.stop();
             this.clip.close();
-        } else System.out.println(change+" not understood");
+        } else throw new RuntimeException("Hopefully not!"); //System.out.println(change+" not understood");
     }
 
     /**
@@ -117,12 +116,11 @@ class MusicPlayer extends JPanel {
             this.currentSong = 0;
         }
 
-        this.changeClipState("close");
-        this.clip.open(this.audioStreams.get(this.currentSong));
+        this.clip.stop();
+        this.clip = this.clips[this.currentSong];
+        this.clip.setFramePosition(0);
 
-        if ( wasRunning ) {
-            this.changeClipState("play");
-        }
+        if (wasRunning) this.clip.start();
     }
 
     /**
@@ -138,12 +136,11 @@ class MusicPlayer extends JPanel {
             this.currentSong = this.amountSongs - 1;
         }
 
-        this.changeClipState("close");
-        this.clip.open(this.audioStreams.get(this.currentSong));
+        this.clip.stop();
+        this.clip = this.clips[this.currentSong];
+        this.clip.setFramePosition(0);
 
-        if ( wasRunning ) {
-            this.changeClipState("play");
-        }
+        if (wasRunning) this.clip.start();
     }
 
     /**
@@ -157,12 +154,27 @@ class MusicPlayer extends JPanel {
     private ArrayList<AudioInputStream> generateAudioStreams(ArrayList<File> files)
                 throws UnsupportedAudioFileException, IOException {
 
-        ArrayList<AudioInputStream> result = new ArrayList<AudioInputStream>();
+        ArrayList<AudioInputStream> result = new ArrayList<>();
         for (File currFile : files) {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(currFile);
             result.add(audioInputStream);
         }
 
+        return result;
+    }
+
+    /**
+     * method to generate array of clips based on the this.audioStreams arraylist
+     * @return a full, generated array of clips responding to this.audioStreams
+     * @throws LineUnavailableException throws
+     * @throws IOException throws
+     */
+    private Clip[] generateClips() throws LineUnavailableException, IOException {
+        Clip[] result = new Clip[this.audioStreams.size()];
+        for ( int i = 0; i < this.audioStreams.size(); i++ ) {
+            result[i] = AudioSystem.getClip();
+            result[i].open(this.audioStreams.get(i));
+        }
         return result;
     }
 
@@ -208,7 +220,7 @@ class PlayMusicLabel extends JLabel {
         Icon playIcon = new ImageIcon(tmpPlay1);
         Icon pauseIcon = new ImageIcon(tmpPause1);
 
-        ArrayList<Icon> icons = new ArrayList<Icon>();
+        ArrayList<Icon> icons = new ArrayList<>();
         icons.add(playIcon);
         icons.add(pauseIcon);
         this.icons = icons;
@@ -233,7 +245,6 @@ class PlayMusicLabel extends JLabel {
         if false - changes to the one not used right now
          */
         boolean byRunning = true;
-        System.out.println("was running: "+this.musicPlayer.clipWasRunning());
         if ( byRunning ) {
             if ( this.musicPlayer.clipWasRunning() ) {
                 this.setIcon(this.icons.get(1));
@@ -241,7 +252,7 @@ class PlayMusicLabel extends JLabel {
                 this.setIcon(this.icons.get(0));
             }
         }
-        else if ( !byRunning ) {
+        else {
             Icon currIcon = this.getIcon();
             if (currIcon.equals(this.icons.get(0))) {
                 this.setIcon(this.icons.get(1));
@@ -261,8 +272,7 @@ class PlayMusicLabel extends JLabel {
         private final MusicPlayer musicPlayer;
         private final PlayMusicLabel playMusicLabel;
 
-        PlayMouseListener(MusicPlayer nMusicPlayer, PlayMusicLabel playMusicLabel)
-                throws IOException {
+        PlayMouseListener(MusicPlayer nMusicPlayer, PlayMusicLabel playMusicLabel) {
 
             this.musicPlayer = nMusicPlayer;
             this.playMusicLabel = playMusicLabel;
@@ -292,15 +302,13 @@ class PlayMusicLabel extends JLabel {
  * button that allows the user to go to the next song
  */
 class ForwardMusicLabel extends JLabel {
-    private final MusicPlayer musicPlayer;
     public ForwardMusicLabel(MusicPlayer musicPlayer) {
-        this.musicPlayer = musicPlayer;
 
-        ForwardMusicMouseListener forwardMusicML = new ForwardMusicMouseListener(this.musicPlayer);
+        ForwardMusicMouseListener forwardMusicML = new ForwardMusicMouseListener(musicPlayer);
         this.addMouseListener(forwardMusicML);
 
-        int width = this.musicPlayer.getWidth();
-        int height = this.musicPlayer.getHeight();
+        int width = musicPlayer.getWidth();
+        int height = musicPlayer.getHeight();
 
         this.setBounds((int)(width*0.7), (int)(height*0.2),
                 (int)(width*0.2), (int)(height*0.9));
@@ -332,7 +340,6 @@ class ForwardMusicLabel extends JLabel {
         public void mouseClicked(MouseEvent e) {
             try {
                 boolean wasRunning = this.musicPlayer.clipWasRunning();
-                System.out.println("forward " + wasRunning);
                 this.musicPlayer.playForward(wasRunning);
             } catch (LineUnavailableException | IOException ex) {
                 ex.printStackTrace();
@@ -353,15 +360,13 @@ class ForwardMusicLabel extends JLabel {
  * button that allows the user to go to the previous song
  */
 class BackwardMusicLabel extends JLabel {
-    private final MusicPlayer musicPlayer;
     public BackwardMusicLabel(MusicPlayer musicPlayer) {
-        this.musicPlayer = musicPlayer;
 
-        BackwardMusicMouseListener backwardMusicML = new BackwardMusicMouseListener(this.musicPlayer);
+        BackwardMusicMouseListener backwardMusicML = new BackwardMusicMouseListener(musicPlayer);
         this.addMouseListener(backwardMusicML);
 
-        int width = this.musicPlayer.getWidth();
-        int height = this.musicPlayer.getHeight();
+        int width = musicPlayer.getWidth();
+        int height = musicPlayer.getHeight();
 
         this.setBounds((int)(width*0.1), (int)(height*0.2),
                 (int)(width*0.2), (int)(height*0.9));
@@ -393,7 +398,6 @@ class BackwardMusicLabel extends JLabel {
         public void mouseClicked(MouseEvent e) {
             try {
                 boolean wasRunning = this.musicPlayer.clipWasRunning();
-                System.out.println("backward: "+wasRunning);
                 this.musicPlayer.playBackward(wasRunning);
             } catch (LineUnavailableException | IOException ex) {
                 ex.printStackTrace();

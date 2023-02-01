@@ -1,17 +1,10 @@
 package Project;
 
-import java.util.Arrays;
-
 public class Random {
-    public static void main(String[] args) {
-        int[][] test = randomSudoku();
-        System.out.println(Arrays.deepToString(test));
-    }
 
     /**
      * method that creates a random sudoku
-     *
-     * @returns random sudoku array 9x9
+     * @return random sudoku array 9x9
      */
     public static int[][] randomSudoku() {
         int[][] board = new int[9][9];
@@ -46,7 +39,7 @@ public class Random {
 
     /**
      * method that will rotate the board based on probability - increasing randomness
-     * @param givenBoard - board to be rotated/not
+     * @param givenBoard board to be rotated/not
      * @return new board after random rotations
      */
     private static int[][] rotateProbability(int[][] givenBoard) {
@@ -60,7 +53,7 @@ public class Random {
 
     /**
      * helper method for rotating that rotates the board once to the right
-     * @param givenBoard - board to be rotated once to the right
+     * @param givenBoard board to be rotated once to the right
      * @return given board after one rotation to the right
      */
     private static int[][] rotateOnce(int[][] givenBoard) {

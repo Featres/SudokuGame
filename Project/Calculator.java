@@ -4,31 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Calculator {
-    static int[][] example_board1 =           {
-            {0, 0, 6, 1, 0, 0, 0, 0, 8},
-            {0, 8, 0, 0, 9, 0, 0, 3, 0},
-            {2, 0, 0, 0, 0, 5, 4, 0, 0},
-            {4, 0, 0, 0, 0, 1, 8, 0, 0},
-            {0, 3, 0, 0, 7, 0, 0, 4, 0},
-            {0, 0, 7, 9, 0, 0, 0, 0, 3},
-            {0, 0, 8, 4, 0, 0, 0, 0, 6},
-            {0, 2, 0, 0, 5, 0, 0, 8, 0},
-            {1, 0, 0, 0, 0, 2, 5, 0, 0} };
-    static int[][] example_board2 = {
-            {0, 0, 0, 0, 6, 0, 0, 2, 7},
-            {0, 0, 0, 0, 0, 0, 0, 0, 5},
-            {0, 0, 4, 0, 9, 1, 0, 8, 0},
-            {0, 0, 8, 0, 0, 0, 0, 0, 4},
-            {0, 0, 0, 4, 3, 0, 0, 0, 0},
-            {0, 7, 0, 0, 8, 0, 0, 3, 0},
-            {3, 0, 0, 0, 0, 9, 0, 0, 1},
-            {7, 2, 0, 1, 0, 0, 0, 0, 0},
-            {0, 9, 0, 0, 0, 0, 2, 0, 0} };
 
     /**
      * checks if the board is solved - no zeros and no errors
-     * @param board - board to be checked
-     * @return - true if completed, else false
+     * @param board board to be checked
+     * @return true if completed, else false
      */
     public static boolean isDoneAndComplete(int[][] board) {
         return isCompleted(board) && isFullyDone(board);
@@ -36,8 +16,8 @@ public class Calculator {
 
     /**
      * checks if the board is correct - no errors like same number in a row
-     * @param board - board to be checked
-     * @return - true if correctly completed, else false
+     * @param board board to be checked
+     * @return true if correctly completed, else false
      */
     public static boolean isCompleted(int[][] board) {
 //        System.out.println("Testing allowance "+Arrays.deepToString(board));
@@ -46,8 +26,8 @@ public class Calculator {
 
     /**
      * checks if the board is fully completed
-     * @param board - board to be checked
-     * @return - true if it is completed, else false
+     * @param board board to be checked
+     * @return true if it is completed, else false
      */
     public static boolean isFullyDone(int[][] board) {
         for (int[] row : board) {
@@ -60,8 +40,7 @@ public class Calculator {
 
     /**
      * method where you can pass in an uncompleted board, and it returns completed board
-     * @param
-     * board: uncompleted sudoku board (int[9][9])
+     * @param board board to be calculated
      */
     public static int[][] calculateSudoku(int[][] board) {
         int[][] givenBoard = board.clone();
@@ -71,10 +50,9 @@ public class Calculator {
 
     /**
      * method helper for solving sudoku
-     * @params:
-     * posX: starting position of solving for x-axis (start at 0)
-     * posY: starting position of solving for y-axis (start at 0)
-     * board: uncompleted sudoku board
+     * @param posX starting position of solving for x-axis (start at 0)
+     * @param posY starting position of solving for y-axis (start at 0)
+     * @param board uncompleted sudoku board
      */
     private static boolean solver(int posX, int posY, int[][] board) {
         if (posX == 9) {
@@ -95,10 +73,10 @@ public class Calculator {
 
     /**
      * checks if num can be put in the board on position (x,y)
-     * @params:
-     * board: board we are checking
-     * x, y: coordinated of the position we are checking
-     * num: value we are checking
+     * @param board board we are checking
+     * @param x x coordinate of the position we are checking
+     * @param y y coordinate of the position we are checking
+     * @param num value we are checking
      */
     private static boolean assumption(int[][] board, int x, int y, int num) {
         int tmp = board[x][y];
@@ -110,10 +88,7 @@ public class Calculator {
 
     /**
      * checks if a certain number occurs in a certain row
-     * @params:
-     * board: the sudoku board
-     * x: index of row we are checking
-     * num: number we are checking
+     * @param board the sudoku board that we are checking
      */
     private static boolean checkRows(int[][] board) {
         int[] nums = new int[9];
@@ -134,10 +109,7 @@ public class Calculator {
 
     /**
      * checks if a certain number occurs in a certain column
-     * @params:
-     * board: the sudoku board
-     * x: index of column we are checking
-     * num: number we are checking
+     * @param board the sudoku board that we are checking
      */
     private static boolean checkColumns(int[][] board) {
         int[] nums = new int[9];
@@ -158,10 +130,7 @@ public class Calculator {
 
     /**
      * checks if a certain number occurs in a square of a certain position
-     * @params:
-     * board: the sudoku board
-     * x, y: coordinates of the position
-     * num: value we are checking
+     * @param board the sudoku board that we are checking
      */
     private static boolean checkSquares(int[][] board) {
         int[] nums = new int[9];
@@ -187,14 +156,14 @@ public class Calculator {
      * function that will return why the number cannot be
      * inputted on a certain grid cell by returning an array
      * of positions that collide with the given action
-     * @param board - sudoku board that the user works on
-     * @param num - number that the user wants to input on the position
-     * @param row - row that the user wants to input to
-     * @param column - column that the user wants to input to
-     * @return - array of positions that are colliding
+     * @param board sudoku board that the user works on
+     * @param num number that the user wants to input on the position
+     * @param row row that the user wants to input to
+     * @param column column that the user wants to input to
+     * @return array of positions that are colliding
      */
     public static int[][] findCollidingPoints(int[][] board, int num, int row, int column) {
-        ArrayList<String> collidingList = new ArrayList<String>();
+        ArrayList<String> collidingList = new ArrayList<>();
         for ( int i = 0; i < 9; i++ ) {
             if ( board[row][i] == num ) {
                 String data = String.valueOf(row) + i;
@@ -206,8 +175,8 @@ public class Calculator {
             }
         }
 
-        int rowStart = (row/3);
-        int colStart = (column/3);
+        int rowStart = 3*((int)(row/3));
+        int colStart = 3*((int)(column/3));
         for ( int i = 0; i < 3; i++ ) {
             for ( int j = 0; j < 3; j++ ) {
                 if ( board[rowStart+i][colStart+j] == num ) {
@@ -277,7 +246,6 @@ public class Calculator {
 
     /**
      * Exception used to throw when the board is impossible to solve
-     * reason: reason of throwing an error
      */
     private static class UnsolvableBoardException extends RuntimeException {
         UnsolvableBoardException(String reason) {

@@ -14,6 +14,7 @@ import java.util.ArrayList;
  * class that will manage all the labels around the sudoku board
  */
 class FunctionalPanel extends JPanel {
+    public static final int fontSize = Play.screenWidth/90;
     private final JFrame frame;
     private final Game game;
     private final SideCounter sideCounter;
@@ -82,7 +83,7 @@ class FunctionalPanel extends JPanel {
 
     /**
      * getter for the game
-     * @return - current game class object
+     * @return current game class object
      */
     public Game getGame() { return this.game; }
 
@@ -98,7 +99,7 @@ class FunctionalPanel extends JPanel {
      * when changed to false, (for example after bot solution),
      * it makes some functions (mouse listeners mostly) unreachable,
      * because they aren't needed (I am ready after bot...)
-     * @param nAble - boolean informing about availability, false paralyzed some functions
+     * @param nAble boolean informing about availability, false paralyzed some functions
      */
     public void setAble(boolean nAble) { this.able = nAble; }
 
@@ -134,7 +135,7 @@ class FunctionalPanel extends JPanel {
             this.setVerticalAlignment(CENTER);
             this.setOpaque(true);
 
-            Font myFont = new Font("Comic Sans", Font.PLAIN, 25);
+            Font myFont = new Font("Comic Sans", Font.PLAIN, FunctionalPanel.fontSize);
             this.setFont(myFont);
 
             int panelWidth = nPanel.getWidth();
@@ -191,10 +192,9 @@ class FunctionalPanel extends JPanel {
                         new String[] {"Yes, I am sure", "No, take me back"},
                         1);
                 if ( areYouSure != 0 ) {
-                    System.out.println("Not running the bot");
                     return;
                 }
-                System.out.println("Running the bot");
+//                System.out.println("Running the bot");
 
                 int[][] goalBoard = null;
 
@@ -274,7 +274,7 @@ class FunctionalPanel extends JPanel {
             int panelHeight = panel.getHeight();
             this.setBounds((int)(panelWidth*0.15), (int)(panelHeight*0.25), (int)(panelWidth*0.09), (int)(panelHeight*0.08));
 
-            Font myFont = new Font("Comic Sans", Font.PLAIN, 50);
+            Font myFont = new Font("Comic Sans", Font.PLAIN, 2*FunctionalPanel.fontSize);
             this.setFont(myFont);
 
             this.setVisible(true);
@@ -320,7 +320,7 @@ class FunctionalPanel extends JPanel {
         private final int labelHeight;
         private final int width;
         private final int height;
-        ArrayList<JLabel> myLabels = new ArrayList<JLabel>();
+        ArrayList<JLabel> myLabels = new ArrayList<>();
         public SideCounter(FunctionalPanel panel) {
             this.game = panel.getGame();
 
@@ -352,7 +352,7 @@ class FunctionalPanel extends JPanel {
         private JLabel labels() {
             JLabel mainLabel = new JLabel();
 
-            Font titleFont = new Font("Comic Sans", Font.PLAIN, 35);
+            Font titleFont = new Font("Comic Sans", Font.PLAIN, (int)(1.5*FunctionalPanel.fontSize));
 
             JLabel title = new JLabel("COUNTER", SwingConstants.CENTER);
             title.setBounds(0, 10, width, (int)(this.labelHeight/12));
@@ -371,16 +371,14 @@ class FunctionalPanel extends JPanel {
             mainLabel.setOpaque(true);
 
             final int XCORDINATE = 0;
-            final int LABELHEIGHT = this.labelHeight;
-            final int HEIGHTPART = (int)(LABELHEIGHT/12);
+            final int HEIGHTPART = (this.labelHeight /12);
             final int[] DATA = this.numData;
 
             for ( int i = 0; i < DATA.length; i++ ) {
                 final int YCORDINATE = HEIGHTPART*(i+1)+15;
                 final String s = comments[i] + DATA[i];
 
-                int fontSize = 20;
-                Font myFont = new Font("Comic Sans MS", Font.PLAIN, fontSize);
+                Font myFont = new Font("Comic Sans MS", Font.PLAIN, FunctionalPanel.fontSize);
 
                 JLabel currLabel = new JLabel(s, SwingConstants.CENTER);
                 currLabel.setFont(myFont);
@@ -400,7 +398,7 @@ class FunctionalPanel extends JPanel {
 
         /**
          * method to refresh the data of amount of different values
-         * @param board - current state of the board in the game
+         * @param board current state of the board in the game
          * @return new, updated int[] numData array
          */
         private int[] updateNumData(int[][] board) {
@@ -433,12 +431,12 @@ class FunctionalPanel extends JPanel {
 
     /**
      * label, that clicked by the user triggers the checker,
-     * has a white, centered, big text "i am done"
+     * has a white, centered, big text "I am done"
      * positioned regarding frame size
      */
     static class IAmDoneLabel extends JLabel {
         public IAmDoneLabel(FunctionalPanel panel) {
-            Font myFont = new Font("Comic Sans", Font.PLAIN, 44);
+            Font myFont = new Font("Comic Sans", Font.PLAIN, (int)(1.8*FunctionalPanel.fontSize));
             this.setFont(myFont);
             this.setHorizontalAlignment(SwingConstants.CENTER);
             this.setVerticalAlignment(SwingConstants.CENTER);
@@ -461,7 +459,7 @@ class FunctionalPanel extends JPanel {
     }
 
     /**
-     * mouse listener for i am done label in gameview
+     * mouse listener for I am done label in game view
      * whenever called, calls Calculator is done and complete
      * and gives feedback to the user
      */
@@ -487,8 +485,9 @@ class FunctionalPanel extends JPanel {
 
             if ( !isDone ) Play.message("You didn't finish Your board yet! Good luck!");
             else if ( isDoneAndComplete ) {
-                System.out.println("Game ended");
+//                System.out.println("Game ended");
                 this.panel.stopTimerTimerLabel();
+
                 Play.message("Congrats! You won the game!!!");
 
                 JFrame currFrame = this.game.getFrame();
@@ -520,7 +519,7 @@ class FunctionalPanel extends JPanel {
             this.setBackground(Color.WHITE);
             this.setOpaque(false);
 
-            Font myFont = new Font("Comic Sans", Font.PLAIN, 20);
+            Font myFont = new Font("Comic Sans", Font.PLAIN, FunctionalPanel.fontSize);
             this.setFont(myFont);
 
             BackToMainMenuListener backToMainMenuListener = new BackToMainMenuListener(panel);
@@ -577,6 +576,7 @@ class FunctionalPanel extends JPanel {
      * - he will ask for a hint
      * - if he accepts
      * - he will click on a certain box
+     * - the correct number pops
      */
     static class HintLabel extends JLabel {
         public HintLabel(FunctionalPanel panel) {
@@ -588,7 +588,7 @@ class FunctionalPanel extends JPanel {
             this.setOpaque(true);
             this.setText("Get a HINT");
 
-            Font myFont = new Font("Comic Sans", Font.PLAIN, 25);
+            Font myFont = new Font("Comic Sans", Font.PLAIN, FunctionalPanel.fontSize);
             this.setFont(myFont);
 
             this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 5));
@@ -667,7 +667,7 @@ class FunctionalPanel extends JPanel {
             this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 5));
 
 
-            Font myFont = new Font("Comic Sans", Font.PLAIN, 25);
+            Font myFont = new Font("Comic Sans", Font.PLAIN, FunctionalPanel.fontSize);
             this.setFont(myFont);
             this.setHorizontalAlignment(CENTER);
             this.setVerticalAlignment(CENTER);
@@ -683,7 +683,7 @@ class FunctionalPanel extends JPanel {
         public void setBrushMode(boolean nBoolean) {
             this.brushMode = nBoolean;
             this.numberListener.setBrushMode(nBoolean);
-            if ( nBoolean ) this.setText("Brush Mode ON");
+            if ( nBoolean ) this.setText("Brush ON");
             else this.setText("Brush Mode");
         }
 
@@ -712,9 +712,9 @@ class FunctionalPanel extends JPanel {
                             null);
                     if ( choice == 1 ) return;
 
-                    Play.message("You are now in Brush Mode. You can click on the grid cells and remove" +
-                            " inputted values. To leave Brush Mode click on the Brush Mode button again." +
-                            " Note: you can't remove numbers from the starting grid!");
+//                    Play.message("You are now in Brush Mode. You can click on the grid cells and remove" +
+//                            " inputted values. To leave Brush Mode click on the Brush Mode button again." +
+//                            " Note: you can't remove numbers from the starting grid!");
                 }
 
                 this.brushLabel.setBrushMode(true);
@@ -745,7 +745,7 @@ class FunctionalPanel extends JPanel {
             this.setVerticalAlignment(CENTER);
             this.setOpaque(true);
 
-            Font myFont = new Font("Comic Sans", Font.PLAIN, 25);
+            Font myFont = new Font("Comic Sans", Font.PLAIN, FunctionalPanel.fontSize);
             this.setFont(myFont);
 
             int panelWidth = this.panel.getWidth();
@@ -807,7 +807,7 @@ class FunctionalPanel extends JPanel {
             int width = panel.getWidth();
             int height = panel.getHeight();
 
-            Font myFont = new Font("Comic Sans", Font.PLAIN, 44);
+            Font myFont = new Font("Comic Sans", Font.PLAIN, 2*FunctionalPanel.fontSize);
             this.setFont(myFont);
             this.setHorizontalAlignment(SwingConstants.CENTER);
             this.setVerticalAlignment(SwingConstants.CENTER);
@@ -861,15 +861,15 @@ class FunctionalPanel extends JPanel {
                 this.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 15));
                 this.setOpaque(true);
 
-                int size = this.getWidth() / 45;
-                Font myFont = new Font("Comic Sans", Font.PLAIN, size);
+                Font myFont = new Font("Comic Sans", Font.PLAIN, FunctionalPanel.fontSize);
                 String text = " Timer - Timer measures your time in mm:ss.\n" +
                         " Comments Mode - You can turn on comments mode and then whenever you add a number to a cell" +
-                        " it appears as a note just for you. Note: it has to be a valid option for the given cell.\n" +
+                        " it appears as a note just for you. Note: it has to be a valid option for the given cell. " +
+                        "Note: You can remove them with a brush.\n" +
                         " Brush Mode - as soon as You turn on brush mode, you can click on the numbers that You inputted" +
                         " and just delete them. Note: it doesn't work for the numbers that were the starting position.\n" +
                         " Hint - whenever you need a bit of help, You can ask a bot for a hint for the chosen cell. Note: " +
-                        "if you already did some mistakes that make the sudoku impossible, the bot won't help you.\n" +
+                        "if you already did some mistakes that make the sudoku impossible, the hint won't help you.\n" +
                         " Bot - whenever you feel like You are done and need help, You can ask a bot to solve the sudoku" +
                         " for you. Note: if you already did some mistakes that make the sudoku impossible, the bot won't " +
                         "help you. Note: some functionality is then blocked.\n"+
@@ -879,7 +879,7 @@ class FunctionalPanel extends JPanel {
 
                 int rows = (int)(this.getHeight() / (1.25*myFont.getSize()));
                 int columns = this.getWidth() / myFont.getSize();
-                System.out.println(rows+"  "+columns);
+
                 JTextArea helpInfo = new JTextArea(rows, columns);
                 helpInfo.setLineWrap(true);
                 helpInfo.setWrapStyleWord(true);

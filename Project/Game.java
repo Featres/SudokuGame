@@ -14,17 +14,9 @@ import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.Arrays;
 
-// TODO game finish
-// TODO delete dashes from the documentation
-// TODO music fucked up
-// TODO make it more dependent - fonts etc. depending on screen size
-// TODO help button instead of all the questions
 
 /**
  * class where user plays the game
- * implementation:
- * - game board -
- * - on left side numbers from 1 - 9/button clear/...
  */
 public class Game extends JLabel {
     //starting point of the board label
@@ -63,11 +55,11 @@ public class Game extends JLabel {
         this.frame.setLayout(null);
 
         this.currBoard = Random.randomSudoku();
-        System.out.println(Arrays.deepToString(this.currBoard));
+//        System.out.println(Arrays.deepToString(this.currBoard));
 
         this.userChoice = userChoice;
         this.difficulty = customDifficulty(this.userChoice);
-        System.out.println("Difficulty: "+difficulty);
+//        System.out.println("Difficulty: "+difficulty);
         this.startingBoard = setUpStartingBoard(difficulty, this.currBoard);
 
         this.startingPositions = setUpStartingPositions(this.startingBoard);
@@ -112,10 +104,10 @@ public class Game extends JLabel {
 
     /**
      * method to decide which numbers and how many will be shown on starting grid
-     * @param difficulty - probability/amount of number shown in range (0,1)
+     * @param difficulty probability/amount of number shown in range (0,1)
      *                   for example = 0.5 means that ~ 40 nums will be shown
-     * @param board - whole, completed board
-     * @return - board to be displayed, zeros on positions not to be displayed, actual numbers on other
+     * @param board whole, completed board
+     * @return board to be displayed, zeros on positions not to be displayed, actual numbers on other
      */
     private int[][] setUpStartingBoard(double difficulty, int[][] board) {
         int[][] startingBoard = new int[9][9];
@@ -130,15 +122,15 @@ public class Game extends JLabel {
         }
 
 //        System.out.println(Arrays.deepToString(board));
-        System.out.println("Starting board: "+Arrays.deepToString(startingBoard));
+//        System.out.println("Starting board: "+Arrays.deepToString(startingBoard));
 
         return startingBoard;
     }
 
     /**
      * method to set starting positions of numbers, so that they are uneditable
-     * @param board - starting board for the game
-     * @return - positions that are uneditable
+     * @param board starting board for the game
+     * @return positions that are uneditable
      */
     public int[][] setUpStartingPositions(int[][] board) {
         int count = 0;
@@ -158,23 +150,23 @@ public class Game extends JLabel {
                 }
             }
         }
-        System.out.println("Reserved positions: " + Arrays.deepToString(res));
+//        System.out.println("Reserved positions: " + Arrays.deepToString(res));
         return res;
     }
 
     /**
      * method to change users choice in JOptionPane to an actual difficulty
-     * @param userChoice - users choice in JOptionPane difficulty window
-     * @return - double of percentage of shown digits
+     * @param userChoice users choice in JOptionPane difficulty window
+     * @return double of percentage of shown digits
      */
     private double customDifficulty(int userChoice) {
         switch(userChoice) {
             case 0:
-                return Math.random()/5 + 0.45;
+                return Math.random()/5 + 0.55;
             case 1:
-                return Math.random()/5 + 0.30;
+                return Math.random()/5 + 0.40;
             case 2:
-                return Math.random()/5 + 0.20;
+                return Math.random()/5 + 0.30;
             default:
                 return 0.3d;
         }
@@ -182,9 +174,9 @@ public class Game extends JLabel {
 
     /**
      * changes the board and adds a number on it
-     * @param row - row on the board to add a number
-     * @param column - column on the board to add a number
-     * @param number - number to add
+     * @param row row on the board to add a number
+     * @param column column on the board to add a number
+     * @param number number to add
      */
     public void addNumber(int row, int column, int number) {
         this.usersBoard[row][column] = number;
@@ -195,7 +187,7 @@ public class Game extends JLabel {
 
     /**
      * getter for currently stated board
-     * @return - users board
+     * @return users board
      */
     public int[][] getCurrBoard() {
         return this.usersBoard;
@@ -203,25 +195,25 @@ public class Game extends JLabel {
 
     /**
      * setter for the current board
-     * @param nCurrBoard - new board, that is going to be set as current board in game object
+     * @param nCurrBoard new board, that is going to be set as current board in game object
      */
     public void setCurrBoard(int[][] nCurrBoard) { this.usersBoard = nCurrBoard; }
 
     /**
      * getter for the JFrame frame
-     * @return - frame of the game
+     * @return frame of the game
      */
     public JFrame getFrame() { return this.frame; }
 
     /**
      * getter for the sudoku board
-     * @return - current, used sudoku board object
+     * @return current, used sudoku board object
      */
     public SudokuBoard getSudokuBoard() { return this.sudokuBoard; }
 
     /**
      * getter for the functional panel
-     * @return - current, used functional panel object
+     * @return current, used functional panel object
      */
     public FunctionalPanel getFunctionalPanel() { return this.functionalPanel; }
 
@@ -264,9 +256,9 @@ class SudokuBoard extends JPanel {
 
     /**
      * changes the board and adds a number on it and calls a brother method in Game
-     * @param row - row on the board to add a number
-     * @param column - column on the board to add a number
-     * @param number - number to add
+     * @param row row on the board to add a number
+     * @param column column on the board to add a number
+     * @param number number to add
      */
     public void addNumber(int row, int column, int number) {
         this.comments.removeComment(number, row, column);
@@ -278,9 +270,9 @@ class SudokuBoard extends JPanel {
     }
     /**
      * checks if its legal to add a certain number to a certain spot
-     * @param row - row that we want to add
-     * @param column - column that we want to add
-     * @param number - number that we want to add
+     * @param row row that we want to add
+     * @param column column that we want to add
+     * @param number number that we want to add
      * @return true if possible, else false
      */
     public boolean canAddNumber(int row, int column, int number) {
@@ -430,10 +422,10 @@ class SudokuBoard extends JPanel {
      * method that will be called every time that something
      * collides, it will run a searching algorithm and update the
      * colliding points variable
-     * @param board - the sudoku board that the user is working on
-     * @param num - number that the user tried to input
-     * @param row - row that the user tried to input the number to
-     * @param column - column that the user tried to input the number to
+     * @param board the sudoku board that the user is working on
+     * @param num number that the user tried to input
+     * @param row row that the user tried to input the number to
+     * @param column column that the user tried to input the number to
      */
     public void updateCollidingPoints(int[][] board, int num, int row, int column) {
         this.collidingPoints = Calculator.findCollidingPoints(board, num, row, column);
@@ -517,6 +509,9 @@ class NumberListener implements MouseListener {
                 }
             }
 
+            Comments comments = this.game.getComments();
+            comments.clearComment(yGrid, xGrid);
+
             this.sudokuBoard.addNumber(yGrid, xGrid, 0);
 
             return;
@@ -550,10 +545,9 @@ class NumberListener implements MouseListener {
                     this.sudokuBoard.addNumber(yGrid, xGrid, num);
                     askFrame.dispose();
                 } else {
-                    Play.message("You cannot use that number here");
+//                    Play.message("You cannot use that number here");
 
                     int[][] board = this.game.getCurrBoard();
-                    // TODO those numbers are often wrong (too many collisions shown)
                     this.sudokuBoard.updateCollidingPoints(board, num, yGrid, xGrid);
                     this.game.repaint();
 

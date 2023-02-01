@@ -39,6 +39,7 @@ public class Play {
         JOptionPane.showMessageDialog(new JFrame(), message);
     }
 
+
     /**
      * method used when creating the sudoku board to determine
      * the difficulty of the board
@@ -121,11 +122,7 @@ class TitleLabel extends JLabel {
  * play button for the game added to the menu - starts the game
  */
 class PlayLabel extends JLabel {
-    private final JLabel label;
-    private final JFrame frame;
     PlayLabel(JLabel label, JFrame frame) {
-        this.frame = frame;
-        this.label = label;
         this.setBounds((int)(Play.screenWidth/10), (int)(Play.screenHeight/3), (int)(Play.screenWidth/10), (int)(Play.screenHeight/18));
         this.setText("Play");
         this.setFont(new Font("SansSerif", Font.BOLD, 45));
@@ -133,7 +130,7 @@ class PlayLabel extends JLabel {
         this.setVerticalAlignment(SwingConstants.CENTER);
         this.setBackground(Color.WHITE);
         this.setOpaque(true);
-        this.addMouseListener(new ClickListener(this.frame, this.label));
+        this.addMouseListener(new ClickListener(frame, label));
         LineBorder line = new LineBorder(Color.GRAY, 1, true);
         this.setBorder(line);
     }
