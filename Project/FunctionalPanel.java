@@ -1,4 +1,4 @@
-    package Project;
+package Project;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;

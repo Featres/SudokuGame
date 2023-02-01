@@ -28,6 +28,7 @@ public class Play {
         screenHeight = (int)size.getHeight();
 
         new Menu();
+
     }
 
     /**
