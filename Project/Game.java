@@ -14,6 +14,9 @@ import java.awt.geom.Point2D;
 import java.io.IOException;
 
 
+// TODO clicking numbers to work with the sudoku
+// TODO choosing the numbers to be highlighted
+
 /**
  * class where user plays the game
  */
