@@ -41,7 +41,7 @@ public class Game extends JLabel {
     JFrame frame;
     private final SudokuBoard sudokuBoard;
     private final FunctionalPanel functionalPanel;
-    private final MusicPlayer musicPlayer;
+    private MusicPlayer musicPlayer = null;
     private final CorrectFlare correctFlare;
     private final Comments comments;
     Game(JFrame frame, int userChoice)
@@ -183,6 +183,14 @@ public class Game extends JLabel {
         this.correctFlare.updateCorrectFlare(row, column);
 
         this.repaint();
+    }
+
+    public void playPauseMusic() throws LineUnavailableException, IOException {
+        if ( this.musicPlayer == null ) return;
+        this.musicPlayer.playPause();
+
+        PlayMusicLabel playMusicLabel = this.musicPlayer.getPlayMusicLabel();
+        playMusicLabel.changeIcon();
     }
 
     /**
@@ -372,7 +380,7 @@ class SudokuBoard extends JPanel {
 
         if ( collidingPos != null ) {
             g2.setColor(Color.RED);
-            System.out.println(Arrays.deepToString(collidingPos));
+//            System.out.println(Arrays.deepToString(collidingPos));
             for ( int[] pos : collidingPos ) {
                 int circleX = pos[0]*SIZE;
                 int circleY = pos[1]*SIZE;

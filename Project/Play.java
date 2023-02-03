@@ -1,12 +1,18 @@
 package Project;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.IOException;
+
+import static java.awt.event.KeyEvent.VK_SPACE;
 
 /**
  * class with main function of the project
@@ -61,6 +67,7 @@ public class Play {
  * - game title
  */
 class Menu extends JFrame {
+    private final MenuLabel menuLabel;
     Menu() {
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setTitle("Game of Sudoku");
@@ -68,13 +75,17 @@ class Menu extends JFrame {
         this.setLayout(null);
 
         try {
-            // C:\Users\piort\OneDrive\Documents\GitHub\SudokuGame\Project\Images\MenuBackground.png
             this.setContentPane(new JLabel(new ImageIcon(ImageIO.read(new File("Images/BackGround/MenuBackground.png")))));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        this.add(new MenuLabel(this));
+        MenuLabel menuLabel = new MenuLabel(this);
+        this.menuLabel = menuLabel;
+        this.add(menuLabel);
+
+        SpaceListener spaceListener = new SpaceListener(this);
+        this.addKeyListener(spaceListener);
 
         String logoPath = "Images/Logo/Logo.png";
         ImageIcon logo1 = new ImageIcon(logoPath);
@@ -84,22 +95,70 @@ class Menu extends JFrame {
         this.setVisible(true);
     }
 
+    /**
+     * gettter for the menu label object
+     * @return this.menuLabel of type MenuLabel
+     */
+    public MenuLabel getMenuLabel() { return this.menuLabel; }
+
+    /**
+     * class that will listen to the space bar and play music
+     * when it is clicked
+     */
+    static class SpaceListener implements KeyListener {
+        private final Menu menu;
+        public SpaceListener(Menu menu) { this.menu = menu; }
+        @Override
+        public void keyTyped(KeyEvent e) {
+            if ( e.getExtendedKeyCode() != 0x0 ) { return; }
+
+            Game game = null;
+            try {
+                MenuLabel menuLabel = menu.getMenuLabel();
+
+                game = menuLabel.getGame();
+            } catch ( Exception ex ) { return; }
+
+            if ( game == null ) return;
+
+            try {
+                game.playPauseMusic();
+            } catch (LineUnavailableException | IOException ex) {
+                throw new RuntimeException(ex);
+            }
+
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {}
+        @Override
+        public void keyReleased(KeyEvent e) {}
+    }
 }
 
 /**
  * label used to control all the labels on menu panel
  */
 class MenuLabel extends JLabel {
-    private final JFrame frame;
+    private final PlayLabel playLabel;
     MenuLabel(JFrame frame) {
-        this.frame = frame;
         this.setBounds(0,0, Play.screenWidth, Play.screenHeight);
         this.add(new TitleLabel());
-        this.add(new PlayLabel(this, this.frame));
+
+        PlayLabel playLabel = new PlayLabel(this, frame);
+        this.playLabel = playLabel;
+        this.add(playLabel);
 
         boolean showInstructions = false;
         if ( showInstructions ) this.add(new InstructionLabel());
     }
+
+    /**
+     * getter for the game object that helps to reach
+     * the getter from the play label
+     * @return this.game of type Game from clickListener
+     */
+    public Game getGame() { return this.playLabel.getGame(); }
 }
 
 /**
@@ -123,6 +182,7 @@ class TitleLabel extends JLabel {
  * play button for the game added to the menu - starts the game
  */
 class PlayLabel extends JLabel {
+    private final ClickListener clickListener;
     PlayLabel(JLabel label, JFrame frame) {
         this.setBounds((int)(Play.screenWidth/10), (int)(Play.screenHeight/3), (int)(Play.screenWidth/10), (int)(Play.screenHeight/18));
         this.setText("Play");
@@ -131,10 +191,21 @@ class PlayLabel extends JLabel {
         this.setVerticalAlignment(SwingConstants.CENTER);
         this.setBackground(Color.WHITE);
         this.setOpaque(true);
-        this.addMouseListener(new ClickListener(frame, label));
+
+        ClickListener clickListener = new ClickListener(frame, label);
+        this.clickListener = clickListener;
+        this.addMouseListener(clickListener);
+
         LineBorder line = new LineBorder(Color.GRAY, 1, true);
         this.setBorder(line);
     }
+
+    /**
+     * getter for the game object that helps to reach the
+     * getter of the clickListener
+     * @return this.game of type Game from clickListener
+     */
+    public Game getGame() { return this.clickListener.getGame(); }
 }
 
 /**
@@ -206,9 +277,11 @@ class InstructionLabel extends JLabel {
 class ClickListener implements MouseListener {
     private final JLabel label;
     private final JFrame frame;
+    private Game game;
     ClickListener(JFrame frame, JLabel label) {
         this.label = label;
         this.frame = frame;
+        this.game = null;
     }
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -221,6 +294,7 @@ class ClickListener implements MouseListener {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        this.game = newGame;
         this.frame.add(newGame);
     }
     @Override
@@ -231,4 +305,10 @@ class ClickListener implements MouseListener {
     public void mouseEntered(MouseEvent e) {}
     @Override
     public void mouseExited(MouseEvent e) {}
+
+    /**
+     * getter for the game object
+     * @return this.game of type Game
+     */
+    public Game getGame() { return this.game; }
 }

@@ -21,6 +21,7 @@ class MusicPlayer extends JPanel {
     private Clip clip;
     private int currentSong;
     private final int amountSongs = 5;
+    private final PlayMusicLabel playMusicLabel;
     MusicPlayer(Game game)
             throws UnsupportedAudioFileException, IOException, LineUnavailableException {
 
@@ -46,6 +47,7 @@ class MusicPlayer extends JPanel {
         this.add(backwardMusicLabel);
 
         PlayMusicLabel playMusicLabel = new PlayMusicLabel(this);
+        this.playMusicLabel = playMusicLabel;
         this.add(playMusicLabel);
 
         ForwardMusicLabel forwardMusicLabel = new ForwardMusicLabel(this);
@@ -184,6 +186,12 @@ class MusicPlayer extends JPanel {
      */
     public boolean clipWasRunning() { return this.clip.isRunning(); }
 
+    /**
+     * getter for the playMusicLabel object
+     * @return this.playMusicLabel of type PlayMusicLabel
+     */
+    public PlayMusicLabel getPlayMusicLabel() { return this.playMusicLabel; }
+
 }
 
 /**
@@ -193,10 +201,11 @@ class MusicPlayer extends JPanel {
 class PlayMusicLabel extends JLabel {
     private final MusicPlayer musicPlayer;
     private final ArrayList<Icon> icons;
-    public PlayMusicLabel(MusicPlayer nMusicPlayer)
-            throws IOException {
+    private boolean byRunning;
+    public PlayMusicLabel(MusicPlayer nMusicPlayer) {
 
         this.musicPlayer = nMusicPlayer;
+        this.byRunning = false;
 
         int width = this.musicPlayer.getWidth();
         int height = this.musicPlayer.getHeight();
@@ -244,9 +253,11 @@ class PlayMusicLabel extends JLabel {
         if true - checks whether it's running
         if false - changes to the one not used right now
          */
-        boolean byRunning = true;
+        boolean byRunning = this.byRunning;
+
+        boolean wasRunning = this.musicPlayer.clipWasRunning();
         if ( byRunning ) {
-            if ( this.musicPlayer.clipWasRunning() ) {
+            if ( wasRunning ) {
                 this.setIcon(this.icons.get(1));
             } else {
                 this.setIcon(this.icons.get(0));
@@ -260,6 +271,7 @@ class PlayMusicLabel extends JLabel {
                 this.setIcon(this.icons.get(0));
             }
         }
+        this.byRunning = true;
     }
 
     /**
