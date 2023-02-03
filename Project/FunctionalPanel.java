@@ -65,6 +65,9 @@ class FunctionalPanel extends JPanel {
         HelpLabel helpLabel = new HelpLabel(this);
         this.add(helpLabel);
 
+        HighlightLabel highlightLabel = new HighlightLabel();
+        this.add(highlightLabel);
+
         this.setOpaque(false);
         this.setVisible(true);
     }
