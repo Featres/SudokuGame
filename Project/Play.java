@@ -12,7 +12,6 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 
-import static java.awt.event.KeyEvent.VK_SPACE;
 
 /**
  * class with main function of the project
