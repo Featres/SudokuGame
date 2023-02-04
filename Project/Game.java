@@ -4,18 +4,12 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 
-
-// TODO clicking numbers to work with the sudoku
-// TODO choosing the numbers to be highlighted
 
 /**
  * class where user plays the game
@@ -249,6 +243,7 @@ class SudokuBoard extends JPanel {
     private int[][] collidingPoints;
     private final Comments comments;
     private final NumberListener numberListener;
+    private int highlight;
     SudokuBoard(int[][] nStartingBoard, Game label) {
         this.setBounds(Game.boardX, Game.boardY, Game.boardSize, Game.boardSize);
         this.setBackground(Color.WHITE);
@@ -256,6 +251,7 @@ class SudokuBoard extends JPanel {
 
         this.boardLabel = label;
         this.comments = label.getComments();
+        this.highlight = 0;
 
         NumberListener nl = new NumberListener(this, this.boardLabel);
         this.addMouseListener(nl);
@@ -309,6 +305,9 @@ class SudokuBoard extends JPanel {
         final int STARTX = 0;
         final int STARTY = 0;
 
+        g2.setColor(Color.WHITE);
+        g2.fillRect(0, 0, Game.boardSize, Game.boardSize);
+
         g2.setStroke(new BasicStroke(3));
         g2.setColor(Color.BLACK);
 
@@ -338,7 +337,19 @@ class SudokuBoard extends JPanel {
 
                 // draw numbers
                 if ( this.startingBoard[column][row] != 0 ) {
-                    g2.drawString(String.valueOf(this.startingBoard[column][row]), STARTX + currX + 20, STARTY + currY + SIZE - 10 );
+                    g2.drawString(String.valueOf(this.startingBoard[column][row]), STARTX + currX + 20, STARTY + currY + SIZE - 10);
+
+
+                    if (this.startingBoard[column][row] == this.highlight) {
+                        g2.setColor(Color.BLACK);
+                        int circleX = row * SIZE;
+                        int circleY = column * SIZE;
+
+                        Ellipse2D circle = new Ellipse2D.Double(circleX, circleY, SIZE, SIZE);
+
+                        g2.draw(circle);
+                    }
+
                 }
             }
         }
@@ -452,6 +463,16 @@ class SudokuBoard extends JPanel {
      * @return this.numberListener of type NumberListener
      */
     public NumberListener getNumberListener() { return this.numberListener; }
+
+    /**
+     * method used to set highlighted number,
+     * also calls repaint
+     * @param num the number to be highlighted
+     */
+    public void setHighlight(int num) {
+        this.highlight = num;
+        this.repaint();
+    }
 }
 
 /**
@@ -539,6 +560,10 @@ class NumberListener implements MouseListener {
         JFrame askFrame = new JFrame("Choose number");
         askFrame.setLayout(new GridLayout(3,3));
 
+        AskFrameKeyListener askFrameKeyListener =
+                new AskFrameKeyListener(askFrame, this, xGrid, yGrid);
+        askFrame.addKeyListener(askFrameKeyListener);
+
         for ( int i = 1; i <= 9; i++ ) {
             JButton currButton = new JButton(String.valueOf(i));
             final int num = i;
@@ -568,7 +593,11 @@ class NumberListener implements MouseListener {
         }
 
         askFrame.setSize(250,250);
+        askFrame.setLocationRelativeTo(this.game.getFunctionalPanel().getTimerLabel());
+
         askFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        askFrame.setFocusable(true);
+        askFrame.requestFocus();
         askFrame.setVisible(true);
     }
     @Override
@@ -591,4 +620,55 @@ class NumberListener implements MouseListener {
      * @param nBoolean the new value of brush mode
      */
     public void setBrushMode(boolean nBoolean) { this.brushMode = nBoolean; }
+
+    /**
+     * getter for the game object
+     * @return this.game of type Game
+     */
+    public Game getGame() { return this.game; }
+}
+
+class AskFrameKeyListener implements KeyListener {
+    private final JFrame frame;
+    private final Game game;
+    private final Comments comments;
+    private final SudokuBoard sudokuBoard;
+    private final int xGrid;
+    private final int yGrid;
+    public AskFrameKeyListener(JFrame frame, NumberListener numberListener,
+                               int xGrid, int yGrid) {
+        this.frame = frame;
+        this.game = numberListener.getGame();
+        this.comments = this.game.getComments();
+        this.sudokuBoard = this.game.getSudokuBoard();
+        this.xGrid = xGrid;
+        this.yGrid = yGrid;
+    }
+    @Override
+    public void keyTyped(KeyEvent e) {
+        char eChar = e.getKeyChar();
+        if ( !"123456789".contains(String.valueOf(eChar)) ) return;
+
+        int num = Integer.parseInt(String.valueOf(eChar));
+
+        frame.dispose();
+
+        if ( this.comments.getCommentsMode() ) {
+            this.comments.addComment(num, this.yGrid, this.xGrid);
+            return;
+        }
+
+        if ( this.sudokuBoard.canAddNumber(this.yGrid, this.xGrid, num) ) {
+            this.comments.clearComment(this.yGrid, this.xGrid);
+            this.sudokuBoard.addNumber(this.yGrid, this.xGrid, num);
+        } else {
+            int[][] board = this.game.getCurrBoard();
+            this.sudokuBoard.updateCollidingPoints(board, num, this.yGrid, this.xGrid);
+            this.game.repaint();
+        }
+    }
+    @Override
+    public void keyPressed(KeyEvent e) {}
+    @Override
+    public void keyReleased(KeyEvent e) {}
 }

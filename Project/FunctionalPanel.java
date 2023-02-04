@@ -65,8 +65,11 @@ class FunctionalPanel extends JPanel {
         HelpLabel helpLabel = new HelpLabel(this);
         this.add(helpLabel);
 
-        HighlightLabel highlightLabel = new HighlightLabel();
+        HighlightLabel highlightLabel = new HighlightLabel(this);
         this.add(highlightLabel);
+
+        HighlightTitle highlightTitle = new HighlightTitle(highlightLabel);
+        this.add(highlightTitle);
 
         this.setOpaque(false);
         this.setVisible(true);
@@ -123,6 +126,12 @@ class FunctionalPanel extends JPanel {
      * in TimerLabel that stops the timer when the game ends
      */
     public void stopTimerTimerLabel() { this.timerLabel.stopTimer(); }
+
+    /**
+     * getter for the timer label
+     * @return this.timerLabel of type TimerLabel
+     */
+    public TimerLabel getTimerLabel() { return this.timerLabel; }
 
     /**
      * label that will be a button for the user to click,
@@ -878,6 +887,8 @@ class FunctionalPanel extends JPanel {
                         "help you. Note: some functionality is then blocked.\n"+
                         " Music Player - play/pause to turn the music on or off. Backwards for the previous song and " +
                         "forward for the next one.\n" +
+                        " Highlight - You can highlight any number You want, but only one at a time. Might help you to " +
+                        "find the solution.\n" +
                         " I am Done - as soon as You finish, click on that button to finish the game.";
 
                 int rows = (int)(this.getHeight() / (1.25*myFont.getSize()));
@@ -907,6 +918,29 @@ class FunctionalPanel extends JPanel {
              * @param nBoolean the new value of show
              */
             public void setShow(boolean nBoolean) { this.setVisible(nBoolean); }
+        }
+    }
+
+    static class HighlightTitle extends JLabel {
+        public HighlightTitle(HighlightLabel label) {
+            this.setText("Highlight:");
+
+            Font myFont = new Font("Comic Sans", Font.PLAIN, (int)(FunctionalPanel.fontSize*1.5));
+            this.setFont(myFont);
+
+            this.setVerticalTextPosition(CENTER);
+            this.setHorizontalAlignment(CENTER);
+
+            int x = label.getX();
+            int y = label.getY();
+            int width = label.getWidth();
+            int height = label.getHeight();
+
+            int myWidth = width/3;
+            this.setBounds(x-myWidth, y, myWidth, height);
+
+            this.setOpaque(false);
+            this.setVisible(true);
         }
     }
 }
