@@ -305,9 +305,6 @@ class SudokuBoard extends JPanel {
         final int STARTX = 0;
         final int STARTY = 0;
 
-        g2.setColor(Color.WHITE);
-        g2.fillRect(0, 0, Game.boardSize, Game.boardSize);
-
         g2.setStroke(new BasicStroke(3));
         g2.setColor(Color.BLACK);
 
@@ -471,7 +468,7 @@ class SudokuBoard extends JPanel {
      */
     public void setHighlight(int num) {
         this.highlight = num;
-        this.repaint();
+        this.boardLabel.repaint();
     }
 }
 
