@@ -121,7 +121,12 @@ public class Comments extends JLabel {
      */
     public void addComment( int number, int row, int column ) {
         if ( !this.data.get(row).get(column).contains(number) ) {
-            if ( !this.commentChecker(number, row, column) ) return;
+            if ( !this.commentChecker(number, row, column) ) {
+                this.game.getSudokuBoard().updateCollidingPoints(
+                        this.game.getCurrBoard(), number, row, column);
+                this.game.repaint();
+                return;
+            }
             this.data.get(row).get(column).add(number);
             this.repaint();
         }
@@ -160,8 +165,8 @@ public class Comments extends JLabel {
             }
         }
 
-        int rowStart = row/3;
-        int colStart = column/3;
+        int rowStart = 3*((int)(row/3));
+        int colStart = 3*((int)(column/3));
         for ( int i = 0; i < 3; i++ ) {
             for ( int j = 0; j < 3; j++ ) {
                 if ( currBoard[rowStart+i][colStart+j] == number ) {

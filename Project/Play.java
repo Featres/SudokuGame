@@ -109,7 +109,9 @@ class Menu extends JFrame {
         public SpaceListener(Menu menu) { this.menu = menu; }
         @Override
         public void keyTyped(KeyEvent e) {
-            if ( e.getExtendedKeyCode() != 0x0 ) { return; }
+            char chr = e.getKeyChar();
+
+            if ( !String.valueOf(chr).equals(" ") ) { return; }
 
             Game game = null;
             try {
